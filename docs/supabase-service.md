@@ -14,7 +14,7 @@ A comprehensive Supabase service for the 86xed viral bingo grid platform. This s
 ### 🎯 Bingo Grid Management
 
 - Create, read, update, delete grids
-- Face profile integration with AI detection
+- tile profile integration with AI detection
 - Viral scoring algorithm
 - Engagement metrics tracking
 - Public/private grid visibility
@@ -87,7 +87,7 @@ export class GridBuilderComponent {
     const grid = await this.supabase.createGrid({
       title: 'My Viral Grid',
       category: 'celebrities',
-      faces: selectedFaces,
+      tiles: selectedFaces,
       is_public: true
     });
   }
@@ -125,8 +125,8 @@ const grid = await this.supabase.createGrid({
   title: 'Celebrity Bingo 2024',
   description: 'Most talked about celebrities',
   category: 'celebrities',
-  faces: [
-    /* face objects */
+  tiles: [
+    /* tile objects */
   ],
   is_public: true,
 });
@@ -175,13 +175,13 @@ this.supabase.subscribeToNewComments(gridId).subscribe((newComment) => {
 });
 ```
 
-### Face Management
+### tile Management
 
 ```typescript
-// Search faces by name/category
-const faces = await this.supabase.searchFaces('taylor swift', 'musicians');
+// Search tiles by name/category
+const tiles = await this.supabase.searchFaces('taylor swift', 'musicians');
 
-// Get faces by category
+// Get tiles by category
 const celebrities = await this.supabase.getFacesByCategory('celebrities');
 ```
 
@@ -235,7 +235,7 @@ await this.supabase.markGridAsProduct(
 
 - **users** - User profiles and stats
 - **bingo_grids** - Grid data and metrics
-- **face_profiles** - Face library with AI data
+- **face_profiles** - tile library with AI data
 - **votes** - Voting system
 - **comments** - Threaded comments
 - **collections** - User collections
@@ -359,7 +359,7 @@ if (environment.development) {
 
 ## Related Services
 
-- **Google AI Service** - Face detection integration
+- **Google AI Service** - tile detection integration
 - **Shopify Service** - Commerce integration
 - **Social Distribution Service** - Cross-platform sharing
 - **Theme Service** - UI theming system

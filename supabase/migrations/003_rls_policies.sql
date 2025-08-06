@@ -31,12 +31,12 @@ CREATE POLICY "Users can update their own grids" ON public.bingo_grids
 CREATE POLICY "Users can delete their own grids" ON public.bingo_grids
   FOR DELETE USING (created_by = auth.uid());
 
--- Face profiles policies (public read, admin write)
-CREATE POLICY "Anyone can view face profiles" ON public.face_profiles
+-- tile profiles policies (public read, admin write)
+CREATE POLICY "Anyone can view tile profiles" ON public.face_profiles
   FOR SELECT USING (true);
 
--- Only service role can insert face profiles (via admin functions)
-CREATE POLICY "Service role can manage face profiles" ON public.face_profiles
+-- Only service role can insert tile profiles (via admin functions)
+CREATE POLICY "Service role can manage tile profiles" ON public.face_profiles
   FOR ALL USING (auth.jwt() ->> 'role' = 'service_role');
 
 -- Votes policies

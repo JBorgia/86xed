@@ -3,7 +3,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Observable, from, BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { BingoGrid, SocialMetrics, Face } from '../../types/index';
+import { BingoGrid, SocialMetrics, tile } from '../../types/index';
 
 export interface SupabaseUser {
   id: string;
@@ -135,7 +135,7 @@ export class SupabaseService {
             username,
             avatar_url
           ),
-          faces:grid_faces (
+          tiles:grid_tiles (
             id,
             image_url,
             name,
@@ -347,7 +347,7 @@ export class SupabaseService {
       id: dbData['id'] as string,
       title: dbData['title'] as string,
       description: dbData['description'] as string,
-      faces: (dbData['faces'] as Face[]) || [],
+      tiles: (dbData['tiles'] as tile[]) || [],
       theme: dbData['theme'] as string,
       createdBy: dbData['created_by'] as string,
       viralScore: (dbData['viral_score'] as number) || 0,

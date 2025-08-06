@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { BingoGrid, Face } from '../../../../types';
+import { BingoGrid, tile } from '../../../../types';
 
 @Component({
   selector: 'app-grid-card',
@@ -28,12 +28,12 @@ export class GridCardComponent {
   }
 
   getMiniGridCells(): string[] {
-    if (this.grid?.faces && Array.isArray(this.grid.faces)) {
-      return this.grid.faces.slice(0, 8).map((face: Face) => {
-        return face.imageUrl || face.name || '';
+    if (this.grid?.tiles && Array.isArray(this.grid.tiles)) {
+      return this.grid.tiles.slice(0, 8).map((tile: tile) => {
+        return tile.imageUrl || tile.name || '';
       });
     }
-    // Fallback for grids without faces
+    // Fallback for grids without tiles
     return ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
   }
 

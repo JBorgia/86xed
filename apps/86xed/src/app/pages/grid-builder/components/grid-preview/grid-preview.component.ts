@@ -1,12 +1,12 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Face } from '../../../../types';
+import { tile } from '../../../../types';
 
 export interface GridPreviewData {
   title: string;
   description: string;
   selectedCategory: string;
-  selectedFaces: Face[];
+  selectedTiles: tile[];
   isPublic: boolean;
   isGenerating: boolean;
 }
@@ -23,7 +23,7 @@ export class GridPreviewComponent {
     title: '',
     description: '',
     selectedCategory: '',
-    selectedFaces: [],
+    selectedTiles: [],
     isPublic: false,
     isGenerating: false,
   };
@@ -41,19 +41,19 @@ export class GridPreviewComponent {
 
   canGenerate(): boolean {
     return (
-      this.previewData.selectedFaces.length > 0 &&
+      this.previewData.selectedTiles.length > 0 &&
       this.previewData.title.trim().length > 0
     );
   }
 
-  getGridPreview(): (Face | null)[] {
+  getGridPreview(): (Tile | null)[] {
     const grid = new Array(25).fill(null);
-    // Fill with selected faces (skip center cell at index 12)
-    let faceIndex = 0;
+    // Fill with selected tiles (skip center cell at index 12)
+    let tileIndex = 0;
     for (let i = 0; i < 25; i++) {
-      if (i !== 12 && faceIndex < this.previewData.selectedFaces.length) {
-        grid[i] = this.previewData.selectedFaces[faceIndex];
-        faceIndex++;
+      if (i !== 12 && tileIndex < this.previewData.selectedTiles.length) {
+        grid[i] = this.previewData.selectedTiles[tileIndex];
+        tileIndex++;
       }
     }
     return grid;

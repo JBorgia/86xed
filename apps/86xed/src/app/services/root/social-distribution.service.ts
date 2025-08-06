@@ -5,7 +5,7 @@ import { Observable, from } from 'rxjs';
 import { BingoGrid, SocialMetrics } from '../../types/index';
 
 export interface SocialPlatform {
-  name: 'twitter' | 'instagram' | 'tiktok' | 'facebook' | 'reddit' | 'discord';
+  name: 'twitter' | 'instagram' | 'tiktok' | 'tilebook' | 'reddit' | 'discord';
   enabled: boolean;
   accessToken?: string;
   lastSync?: Date;
@@ -26,53 +26,65 @@ export interface CrossPlatformMetrics {
   totalShares: number;
   totalReach: number;
   totalEngagement: number;
-  platformBreakdown: Record<string, {
-    shares: number;
-    reach: number;
-    engagement: number;
-  }>;
+  platformBreakdown: Record<
+    string,
+    {
+      shares: number;
+      reach: number;
+      engagement: number;
+    }
+  >;
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SocialDistributionService {
   private http = inject(HttpClient);
-  
+
   private readonly platforms: SocialPlatform[] = [
     { name: 'twitter', enabled: true },
     { name: 'instagram', enabled: true },
     { name: 'tiktok', enabled: true },
     { name: 'facebook', enabled: false },
     { name: 'reddit', enabled: true },
-    { name: 'discord', enabled: true }
+    { name: 'discord', enabled: true },
   ];
 
   /**
    * Share viral grid to all enabled platforms
    */
-  async shareToAllPlatforms(grid: BingoGrid, productUrl?: string): Promise<ShareResult[]> {
+  async shareToAllPlatforms(
+    grid: BingoGrid,
+    productUrl?: string
+  ): Promise<ShareResult[]> {
     console.log('🌐 Distributing grid to social platforms:', grid.title);
-    
+
     const shareResults: ShareResult[] = [];
-    const enabledPlatforms = this.platforms.filter(p => p.enabled);
+    const enabledPlatforms = this.platforms.filter((p) => p.enabled);
 
     for (const platform of enabledPlatforms) {
       try {
-        const result = await this.shareToSpecificPlatform(grid, platform.name, productUrl);
+        const result = await this.shareToSpecificPlatform(
+          grid,
+          platform.name,
+          productUrl
+        );
         shareResults.push(result);
-        
+
         if (result.success) {
           console.log(`✅ Shared to ${platform.name}: ${result.url}`);
         } else {
-          console.warn(`⚠️ Failed to share to ${platform.name}: ${result.error}`);
+          console.warn(
+            `⚠️ Failed to share to ${platform.name}: ${result.error}`
+          );
         }
       } catch (error) {
         console.error(`❌ Error sharing to ${platform.name}:`, error);
         shareResults.push({
           platform: platform.name,
           success: false,
-          error: error instanceof Error ? error.message : 'Unknown error'
+          error: error instanceof Error ? error.message : 'Unknown error',
         });
       }
     }
@@ -84,12 +96,12 @@ export class SocialDistributionService {
    * Share to specific platform
    */
   async shareToSpecificPlatform(
-    grid: BingoGrid, 
-    platform: SocialPlatform['name'], 
+    grid: BingoGrid,
+    platform: SocialPlatform['name'],
     productUrl?: string
   ): Promise<ShareResult> {
     const shareContent = this.generateShareContent(grid, platform, productUrl);
-    
+
     switch (platform) {
       case 'twitter':
         return this.shareToTwitter(grid, shareContent);
@@ -120,9 +132,9 @@ export class SocialDistributionService {
    */
   scheduleOptimalPosts(grid: BingoGrid): Promise<void> {
     const optimalTimes = this.getOptimalPostingTimes();
-    
+
     return Promise.all(
-      optimalTimes.map(({ platform, time }) => 
+      optimalTimes.map(({ platform, time }) =>
         this.schedulePost(grid, platform, time)
       )
     ).then(() => {
@@ -133,78 +145,90 @@ export class SocialDistributionService {
   /**
    * Platform-specific sharing methods
    */
-  private async shareToTwitter(grid: BingoGrid, content: string): Promise<ShareResult> {
+  private async shareToTwitter(
+    grid: BingoGrid,
+    content: string
+  ): Promise<ShareResult> {
     // In production, integrate with Twitter API v2
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const tweetData = {
       text: content,
       media: {
-        media_ids: [await this.uploadMediaToTwitter(grid.faces[0]?.imageUrl)]
-      }
+        media_ids: [await this.uploadMediaToTwitter(grid.faces[0]?.imageUrl)],
+      },
     };
 
     // Simulate Twitter API call
     const mockResponse = {
       id: 'tweet_' + Date.now(),
-      url: `https://twitter.com/86xed/status/tweet_${Date.now()}`
+      url: `https://twitter.com/86xed/status/tweet_${Date.now()}`,
     };
 
     return {
       platform: 'twitter',
       success: true,
       url: mockResponse.url,
-      metrics: { reach: 1500, engagement: 75 }
+      metrics: { reach: 1500, engagement: 75 },
     };
   }
 
-  private async shareToInstagram(grid: BingoGrid, content: string): Promise<ShareResult> {
+  private async shareToInstagram(
+    grid: BingoGrid,
+    content: string
+  ): Promise<ShareResult> {
     // In production, integrate with Instagram Basic Display API
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const postData = {
       image_url: grid.faces[0]?.imageUrl,
       caption: content,
-      access_token: 'INSTAGRAM_ACCESS_TOKEN'
+      access_token: 'INSTAGRAM_ACCESS_TOKEN',
     };
 
     // Simulate Instagram API call
     const mockResponse = {
       id: 'ig_' + Date.now(),
-      permalink: `https://instagram.com/p/ig_${Date.now()}`
+      permalink: `https://instagram.com/p/ig_${Date.now()}`,
     };
 
     return {
       platform: 'instagram',
       success: true,
       url: mockResponse.permalink,
-      metrics: { reach: 2000, engagement: 120 }
+      metrics: { reach: 2000, engagement: 120 },
     };
   }
 
-  private async shareToTikTok(grid: BingoGrid, content: string): Promise<ShareResult> {
+  private async shareToTikTok(
+    grid: BingoGrid,
+    content: string
+  ): Promise<ShareResult> {
     // TikTok requires video content, so we'd need to generate a video from the grid
     // For now, simulate the process
-    
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const videoData = {
       video_url: await this.generateTikTokVideo(grid),
       caption: content,
-      privacy_level: 'SELF_ONLY' // Start private, then make public
+      privacy_level: 'SELF_ONLY', // Start private, then make public
     };
 
     const mockResponse = {
       id: 'tiktok_' + Date.now(),
-      share_url: `https://tiktok.com/@86xed/video/tiktok_${Date.now()}`
+      share_url: `https://tiktok.com/@86xed/video/tiktok_${Date.now()}`,
     };
 
     return {
       platform: 'tiktok',
       success: true,
       url: mockResponse.share_url,
-      metrics: { reach: 5000, engagement: 250 }
+      metrics: { reach: 5000, engagement: 250 },
     };
   }
 
-  private async shareToReddit(grid: BingoGrid, content: string): Promise<ShareResult> {
+  private async shareToReddit(
+    grid: BingoGrid,
+    content: string
+  ): Promise<ShareResult> {
     // Reddit API integration
     const subreddits = this.getRelevantSubreddits(grid);
     const bestSubreddit = subreddits[0]; // Choose best match
@@ -214,73 +238,81 @@ export class SocialDistributionService {
       sr: bestSubreddit,
       kind: 'image',
       title: content,
-      url: grid.faces[0]?.imageUrl
+      url: grid.faces[0]?.imageUrl,
     };
 
     const mockResponse = {
       id: 'reddit_' + Date.now(),
-      url: `https://reddit.com/r/${bestSubreddit}/comments/reddit_${Date.now()}`
+      url: `https://reddit.com/r/${bestSubreddit}/comments/reddit_${Date.now()}`,
     };
 
     return {
       platform: 'reddit',
       success: true,
       url: mockResponse.url,
-      metrics: { reach: 3000, engagement: 180 }
+      metrics: { reach: 3000, engagement: 180 },
     };
   }
 
-  private async shareToDiscord(grid: BingoGrid, content: string): Promise<ShareResult> {
+  private async shareToDiscord(
+    grid: BingoGrid,
+    content: string
+  ): Promise<ShareResult> {
     // Discord webhook integration for community servers
     const webhookUrl = 'DISCORD_WEBHOOK_URL';
-    
+
     const embed = {
       title: grid.title,
       description: content,
       image: { url: grid.faces[0]?.imageUrl },
       color: 0x86ed, // 86xed brand color
-      footer: { text: '86xed - Viral Bingo Creator' }
+      footer: { text: '86xed - Viral Bingo Creator' },
     };
 
     try {
-      await this.http.post(webhookUrl, {
-        embeds: [embed]
-      }).toPromise();
+      await this.http
+        .post(webhookUrl, {
+          embeds: [embed],
+        })
+        .toPromise();
 
       return {
         platform: 'discord',
         success: true,
-        metrics: { reach: 500, engagement: 45 }
+        metrics: { reach: 500, engagement: 45 },
       };
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       return {
         platform: 'discord',
         success: false,
-        error: 'Discord webhook failed'
+        error: 'Discord webhook failed',
       };
     }
   }
 
-  private async shareToFacebook(grid: BingoGrid, content: string): Promise<ShareResult> {
-    // Facebook Graph API integration
+  private async shareToFacebook(
+    grid: BingoGrid,
+    content: string
+  ): Promise<ShareResult> {
+    // tilebook Graph API integration
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const postData = {
       message: content,
       link: `https://86xed.com/grid/${grid.id}`,
-      access_token: 'FACEBOOK_ACCESS_TOKEN'
+      access_token: 'FACEBOOK_ACCESS_TOKEN',
     };
 
     const mockResponse = {
       id: 'fb_' + Date.now(),
-      post_url: `https://facebook.com/86xed/posts/fb_${Date.now()}`
+      post_url: `https://facebook.com/86xed/posts/fb_${Date.now()}`,
     };
 
     return {
       platform: 'facebook',
       success: true,
       url: mockResponse.post_url,
-      metrics: { reach: 1200, engagement: 60 }
+      metrics: { reach: 1200, engagement: 60 },
     };
   }
 
@@ -288,8 +320,8 @@ export class SocialDistributionService {
    * Content generation for different platforms
    */
   private generateShareContent(
-    grid: BingoGrid, 
-    platform: SocialPlatform['name'], 
+    grid: BingoGrid,
+    platform: SocialPlatform['name'],
     productUrl?: string
   ): string {
     const baseContent = this.getBaseShareContent(grid);
@@ -306,14 +338,17 @@ export class SocialDistributionService {
       `This bingo card hits different 🔥 "${grid.title}"`,
       `POV: You need this bingo in your life 📱 "${grid.title}"`,
       `Tag someone who needs to see this bingo 👀 "${grid.title}"`,
-      `When the bingo card calls you out 💀 "${grid.title}"`
+      `When the bingo card calls you out 💀 "${grid.title}"`,
     ];
 
     return templates[Math.floor(Math.random() * templates.length)];
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private getPlatformSpecificContent(platform: SocialPlatform['name'], grid: BingoGrid): string {
+  private getPlatformSpecificContent(
+    platform: SocialPlatform['name'],
+    grid: BingoGrid
+  ): string {
     switch (platform) {
       case 'twitter':
         return '🧵 Thread time: How many can you check off?';
@@ -332,36 +367,42 @@ export class SocialDistributionService {
     }
   }
 
-  private generateHashtags(grid: BingoGrid, platform: SocialPlatform['name']): string {
+  private generateHashtags(
+    grid: BingoGrid,
+    platform: SocialPlatform['name']
+  ): string {
     const baseHashtags = ['#86xed', '#bingo', '#viral', '#relatable'];
     const gridTags = grid.metadata.tags || [];
-    
+
     const platformHashtags = {
       twitter: ['#TwitterBingo', '#ViralTrend'],
       instagram: ['#BingoChallenge', '#Aesthetic', '#Mood'],
       tiktok: ['#BingoTok', '#FYP', '#Viral'],
       reddit: [], // Reddit doesn't use hashtags
       discord: [], // Discord doesn't use hashtags
-      facebook: ['#Community', '#Fun']
+      tilebook: ['#Community', '#Fun'],
     };
 
     const allHashtags = [
       ...baseHashtags,
-      ...gridTags.map(tag => `#${tag}`),
-      ...(platformHashtags[platform] || [])
+      ...gridTags.map((tag) => `#${tag}`),
+      ...(platformHashtags[platform] || []),
     ];
 
     return allHashtags.slice(0, platform === 'twitter' ? 5 : 10).join(' ');
   }
 
-  private getCallToAction(platform: SocialPlatform['name'], productUrl: string): string {
+  private getCallToAction(
+    platform: SocialPlatform['name'],
+    productUrl: string
+  ): string {
     const ctas = {
       twitter: `\n\n🛒 Get it here: ${productUrl}`,
       instagram: `\n\n🛍️ Link in bio to shop this design!`,
       tiktok: `\n\n💰 Link in bio to cop this`,
       reddit: `\n\nAvailable for purchase if anyone's interested: ${productUrl}`,
       discord: `\n\n🛒 ${productUrl}`,
-      facebook: `\n\nShop this design: ${productUrl}`
+      tilebook: `\n\nShop this design: ${productUrl}`,
     };
 
     return ctas[platform] || '';
@@ -386,41 +427,60 @@ export class SocialDistributionService {
     // Choose subreddits based on grid content and tags
     const defaultSubs = ['bingo', 'relatable', 'memeeconomy'];
     const tagBasedSubs = grid.metadata.tags?.slice(0, 2) || [];
-    
+
     return [...tagBasedSubs, ...defaultSubs];
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private async fetchCrossPlatformMetrics(gridId: string): Promise<SocialMetrics> {
+  private async fetchCrossPlatformMetrics(
+    gridId: string
+  ): Promise<SocialMetrics> {
     // In production, this would aggregate metrics from all platforms
     // For now, return mock aggregated data
     return {
       shares: 150,
       likes: 1200,
       comments: 85,
-      saves: 300
+      saves: 300,
     };
   }
 
-  private getOptimalPostingTimes(): Array<{ platform: SocialPlatform['name']; time: Date }> {
+  private getOptimalPostingTimes(): Array<{
+    platform: SocialPlatform['name'];
+    time: Date;
+  }> {
     const now = new Date();
-    
+
     return [
-      { platform: 'twitter', time: new Date(now.getTime() + 2 * 60 * 60 * 1000) }, // +2 hours
-      { platform: 'instagram', time: new Date(now.getTime() + 4 * 60 * 60 * 1000) }, // +4 hours
-      { platform: 'tiktok', time: new Date(now.getTime() + 6 * 60 * 60 * 1000) }, // +6 hours
-      { platform: 'reddit', time: new Date(now.getTime() + 8 * 60 * 60 * 1000) } // +8 hours
+      {
+        platform: 'twitter',
+        time: new Date(now.getTime() + 2 * 60 * 60 * 1000),
+      }, // +2 hours
+      {
+        platform: 'instagram',
+        time: new Date(now.getTime() + 4 * 60 * 60 * 1000),
+      }, // +4 hours
+      {
+        platform: 'tiktok',
+        time: new Date(now.getTime() + 6 * 60 * 60 * 1000),
+      }, // +6 hours
+      {
+        platform: 'reddit',
+        time: new Date(now.getTime() + 8 * 60 * 60 * 1000),
+      }, // +8 hours
     ];
   }
 
   private async schedulePost(
-    grid: BingoGrid, 
-    platform: SocialPlatform['name'], 
+    grid: BingoGrid,
+    platform: SocialPlatform['name'],
     scheduledTime: Date
   ): Promise<void> {
     // In production, this would use a job queue or scheduling service
-    console.log(`📅 Scheduled ${platform} post for ${scheduledTime.toISOString()}`);
-    
+    console.log(
+      `📅 Scheduled ${platform} post for ${scheduledTime.toISOString()}`
+    );
+
     // Store in database for later execution
     // await this.scheduleService.create({
     //   gridId: grid.id,

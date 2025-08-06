@@ -1,7 +1,7 @@
 -- Sample seed data for 86xed platform development
 -- Run this after the schema is created
 
--- Insert sample face profiles for different categories
+-- Insert sample tile profiles for different categories
 INSERT INTO public.face_profiles (name, image_url, category, is_celebrity, ai_detected, confidence_score, tags) VALUES
 -- Celebrities
 ('Taylor Swift', 'https://example.com/faces/taylor-swift.jpg', 'musicians', true, true, 0.98, ARRAY['pop', 'country', 'grammy-winner']),
@@ -71,17 +71,17 @@ FROM public.bingo_grids bg
 WHERE bg.is_viral = true
 ON CONFLICT (short_code) DO NOTHING;
 
--- Update face usage counts based on grid usage
+-- Update tile usage counts based on grid usage
 UPDATE public.face_profiles fp
 SET usage_count = (
   SELECT COUNT(*)
   FROM public.bingo_grids bg,
-       jsonb_array_elements(bg.faces) as face_elem
+       jsonb_array_elements(bg.faces) as tile_elem
   WHERE (face_elem->>'id')::UUID = fp.id
 );
 
 -- Create sample grid categories data
-INSERT INTO public.bingo_grids (title, description, category, faces, is_public, viral_score, engagement_score, upvotes, views, shares, created_by)
+INSERT INTO public.bingo_grids (title, description, category, tiles, is_public, viral_score, engagement_score, upvotes, views, shares, created_by)
 SELECT
   'Sample ' || category || ' Bingo Grid #' || generate_series,
   'A viral bingo grid featuring popular ' || category || ' personalities',
@@ -101,7 +101,7 @@ SELECT
       ORDER BY random()
       LIMIT 25
     ) fp
-  ) as faces,
+  ) as tiles,
   true as is_public,
   ROUND((RANDOM() * 200)::NUMERIC, 2) as viral_score,
   ROUND((RANDOM() * 150)::NUMERIC, 2) as engagement_score,
@@ -170,7 +170,7 @@ SELECT public.calculate_viral_score(id) FROM public.bingo_grids;
 -- Analyze the data for insights
 SELECT
   'Database seeded successfully!' as message,
-  (SELECT COUNT(*) FROM public.face_profiles) as face_profiles_count,
+  (SELECT COUNT(*) FROM public.face_profiles) as tile_profiles_count,
   (SELECT COUNT(*) FROM public.bingo_grids) as grids_count,
   (SELECT COUNT(*) FROM public.votes) as votes_count,
   (SELECT COUNT(*) FROM public.comments) as comments_count,

@@ -10,7 +10,7 @@
       </div>
 
       <div class="step-indicators">
-        @for (step of ['category', 'faces', 'customization', 'preview',
+        @for (step of ['category', 'tiles', 'customization', 'preview',
         'publishing']; track step; let i = $index) {
         <button
           class="step-indicator"
@@ -40,20 +40,20 @@
     </div>
     }
 
-    <!-- Face Selection Step -->
-    @if (state().currentStep === 'faces') {
-    <div class="step-content faces-step">
-      <x86-face-selection
-        [selectedFaces]="state().selectedFaces"
-        [availableFaces]="availableFaces()"
+    <!-- tile Selection Step -->
+    @if (state().currentStep === 'tiles') {
+    <div class="step-content tiles-step">
+      <x86-tile-selection
+        [selectedTiles]="state().selectedTiles"
+        [availableTiles]="availableTiles()"
         [aiSuggestions]="state().aiSuggestions"
         [categoryName]="state().selectedCategory"
-        [searchQuery]="searchFaces()"
-        (faceToggled)="toggleFaceSelection($event)"
+        [searchQuery]="searchTiles()"
+        (tileToggled)="toggleTileSelection($event)"
         (fillWithAI)="fillWithAISuggestions()"
-        (clearAll)="clearAllFaces()"
-        (searchChanged)="onSearchFaces($event)"
-      ></x86-face-selection>
+        (clearAll)="clearAllTiles()"
+        (searchChanged)="onSearchTiles($event)"
+      ></x86-tile-selection>
     </div>
     }
 

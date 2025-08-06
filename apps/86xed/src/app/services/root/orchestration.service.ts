@@ -4,7 +4,7 @@ import { map, switchMap, tap } from 'rxjs/operators';
 
 import {
   BingoGrid,
-  Face,
+  tile,
   GridInput,
   SocialMetrics,
   ShopifyProduct,
@@ -87,21 +87,21 @@ export class OrchestrationService {
   private async processGridCreation(gridInput: GridInput): Promise<BingoGrid> {
     try {
       // 1. AI Enhancement
-      console.log('🤖 Enhancing faces with Google AI...');
-      const enhancedFaces = await this.googleAI.detectCelebrities(
-        gridInput.faces
+      console.log('🤖 Enhancing tiles with Google AI...');
+      const enhancedTiles = await this.googleAI.detectCelebrities(
+        gridInput.tiles
       );
 
       // 2. Create grid object
       const gridData: Partial<BingoGrid> = {
         ...gridInput,
-        faces: enhancedFaces,
-        viralScore: this.calculateInitialViralScore(enhancedFaces),
+        tiles: enhancedTiles,
+        viralScore: this.calculateInitialViralScore(enhancedTiles),
         engagementScore: 0,
         status: 'draft',
         metadata: {
           tags: gridInput.tags,
-          categories: this.categorizeFaces(enhancedFaces),
+          categories: this.categorizeTiles(enhancedTiles),
           aiEnhanced: true,
           printReady: false,
         },
@@ -222,11 +222,11 @@ export class OrchestrationService {
     }
   }
 
-  private calculateInitialViralScore(faces: Face[]): number {
-    // Calculate based on celebrity count, face quality, AI confidence
-    const celebrityBonus = faces.filter((f) => f.celebrity).length * 0.2;
+  private calculateInitialViralScore(tiles: tile[]): number {
+    // Calculate based on celebrity count, tile quality, AI confidence
+    const celebrityBonus = tiles.filter((f) => f.celebrity).length * 0.2;
     const qualityScore =
-      faces.reduce((sum, f) => sum + f.confidence, 0) / faces.length;
+      tiles.reduce((sum, f) => sum + f.confidence, 0) / tiles.length;
     return Math.min(celebrityBonus + qualityScore, 1);
   }
 
@@ -244,11 +244,11 @@ export class OrchestrationService {
     return Math.min(baseScore + engagementBonus, 1);
   }
 
-  private categorizeFaces(faces: Face[]): string[] {
+  private categorizeTiles(tiles: tile[]): string[] {
     const categories: string[] = [];
-    if (faces.some((f) => f.celebrity)) categories.push('celebrities');
-    if (faces.length > 5) categories.push('crowd');
-    if (faces.every((f) => f.confidence > 0.9)) categories.push('high-quality');
+    if (tiles.some((f) => f.celebrity)) categories.push('celebrities');
+    if (tiles.length > 5) categories.push('crowd');
+    if (tiles.every((f) => f.confidence > 0.9)) categories.push('high-quality');
     return categories;
   }
 

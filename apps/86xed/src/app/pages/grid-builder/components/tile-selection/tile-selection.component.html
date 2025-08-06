@@ -1,0 +1,116 @@
+<div class="tile-selection">
+  <!-- Selected tiles Section -->
+  <div class="selected-tiles-section">
+    <div class="section-header">
+      <h3>AI-Selected tiles ({{ selectedTiles.length }}/24)</h3>
+      <div class="tile-actions">
+        <button
+          class="btn btn-secondary"
+          (click)="onFillWithAI()"
+          [disabled]="selectedTiles.length >= 24"
+        >
+          🤖 Fill Remaining Slots
+        </button>
+        <button class="btn btn-outline" (click)="onClearAll()">
+          🔄 Reset to Top 24
+        </button>
+      </div>
+    </div>
+
+    <div class="selected-tiles-grid">
+      @for (slot of getGridSlots(); track $index; let i = $index) { @if (i ===
+      12) {
+      <!-- Center free square (position 12 in 0-indexed 5x5 grid) -->
+      <div class="free-square">
+        <div class="free-text">FREE</div>
+        <div class="bingo-text">SPACE</div>
+      </div>
+      } @else if (slot.tile) {
+      <!-- tile slot -->
+      <div class="selected-tile">
+        <img [src]="slot.tile.imageUrl" [alt]="slot.tile.name" />
+        <div class="tile-overlay">
+          <span class="tile-name">{{ slot.tile.name }}</span>
+          <button
+            class="remove-tile"
+            (click)="onToggleTile(slot.tile)"
+            title="Remove this tile (will be replaced with next best)"
+          >
+            ×
+          </button>
+        </div>
+      </div>
+      } @else {
+      <!-- Empty slot -->
+      <div class="empty-tile-slot">
+        <span>+</span>
+      </div>
+      } }
+    </div>
+  </div>
+
+  <!-- Available tiles Section -->
+  <div class="available-tiles-section">
+    <div class="section-header">
+      <h3>Available {{ categoryName }}</h3>
+      <div class="search-bar">
+        <input
+          type="text"
+          placeholder="Search tiles..."
+          [value]="searchQuery"
+          (input)="onSearch($any($event.target).value)"
+          class="search-input"
+        />
+      </div>
+    </div>
+
+    <!-- AI Suggestions -->
+    @if (aiSuggestions.length > 0) {
+    <div class="ai-suggestions-section">
+      <h4>🤖 Next Best Recommendations</h4>
+      <p class="suggestions-help">
+        Click to add, or click × on selected tiles above to automatically
+        replace with better options
+      </p>
+      <div class="tiles-grid">
+        @for (tile of aiSuggestions; track tile.id) {
+        <button
+          class="tile-card"
+          [class.selected]="isTileSelected(tile)"
+          (click)="onToggleTile(tile)"
+        >
+          <img [src]="tile.imageUrl" [alt]="tile.name" />
+          <div class="tile-info">
+            <span class="tile-name">{{ tile.name }}</span>
+            @if (tile.celebrity) {
+            <span class="celebrity-badge">⭐</span>
+            }
+          </div>
+        </button>
+        }
+      </div>
+    </div>
+    }
+
+    <!-- All Available tiles -->
+    <div class="all-tiles-section">
+      <div class="tiles-grid">
+        @for (tile of availableTiles; track tile.id) {
+        <button
+          class="tile-card"
+          [class.selected]="isTileSelected(tile)"
+          (click)="onToggleTile(tile)"
+        >
+          <img [src]="tile.imageUrl" [alt]="tile.name" />
+          <div class="tile-info">
+            <span class="tile-name">{{ tile.name }}</span>
+            @if (tile.celebrity) {
+            <span class="celebrity-badge">⭐</span>
+            }
+          </div>
+        </button>
+        }
+      </div>
+    </div>
+  </div>
+</div>

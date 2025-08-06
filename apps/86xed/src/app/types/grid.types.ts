@@ -1,5 +1,5 @@
-// Core grid and face types for the 86xed viral bingo platform
-export interface Face {
+// Core grid and tile types for the 86xed viral bingo platform
+export interface tile {
   id: string;
   imageUrl: string;
   name?: string;
@@ -17,7 +17,7 @@ export interface BingoGrid {
   id: string;
   title: string;
   description: string;
-  faces: Face[];
+  tiles: tile[];
   theme: string;
   createdBy: string;
   viralScore: number;
@@ -43,14 +43,14 @@ export interface BingoGrid {
 export interface GridInput {
   title: string;
   description: string;
-  faces: Partial<Face>[];
+  tiles: Partial<Face>[];
   theme: string;
   tags: string[];
 }
 
 export interface GridGenerationRequest {
   theme: string;
-  faces: Face[];
+  tiles: tile[];
   customization?: {
     backgroundColor: string;
     textColor: string;

@@ -22,7 +22,7 @@ CREATE TABLE public.users (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
--- Create face profiles table
+-- Create tile profiles table
 CREATE TABLE public.face_profiles (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   name TEXT NOT NULL,
@@ -42,7 +42,7 @@ CREATE TABLE public.bingo_grids (
   title TEXT NOT NULL,
   description TEXT,
   category TEXT NOT NULL,
-  faces JSONB NOT NULL, -- Array of face profile references
+  tiles JSONB NOT NULL, -- Array of tile profile references
   center_text TEXT,
   center_qr_code TEXT,
   is_public BOOLEAN DEFAULT TRUE,

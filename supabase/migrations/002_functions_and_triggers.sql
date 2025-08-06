@@ -201,7 +201,7 @@ CREATE TRIGGER on_vote_changed
   AFTER INSERT OR UPDATE OR DELETE ON public.votes
   FOR EACH ROW EXECUTE FUNCTION public.update_grid_engagement();
 
--- Function to increment face usage count
+-- Function to increment tile usage count
 CREATE OR REPLACE FUNCTION public.increment_face_usage(face_ids UUID[])
 RETURNS VOID AS $$
 BEGIN
@@ -221,10 +221,10 @@ BEGIN
     updated_at = NOW()
   WHERE id = NEW.created_by;
 
-  -- Extract face IDs from the grid and increment usage
+  -- Extract tile IDs from the grid and increment usage
   IF NEW.faces IS NOT NULL THEN
     PERFORM public.increment_face_usage(
-      ARRAY(SELECT (face->>'id')::UUID FROM jsonb_array_elements(NEW.faces) AS face)
+      ARRAY(SELECT (face->>'id')::UUID FROM jsonb_array_elements(NEW.faces) AS tile)
     );
   END IF;
 
