@@ -6,527 +6,497 @@ import { FormsModule } from '@angular/forms';
 // Services and Types
 import { OrchestrationService } from '../../services/root/orchestration.service';
 import { RealtimeService } from '../../services/root/realtime.service';
-import { BingoGrid, GridInput, Face } from '../../types';
+import { SupabaseService } from '../../services/api/supabase.service';
+import { BingoGrid, Face } from '../../types';
+
+// Sub-components
+import { FaceSelectionComponent } from './components/face-selection/face-selection.component';
+import {
+  CategorySelectionComponent,
+  Category,
+} from './components/category-selection/category-selection.component';
+import {
+  GridCustomizationComponent,
+  GridCustomizationData,
+} from './components/grid-customization/grid-customization.component';
+import {
+  GridPreviewComponent,
+  GridPreviewData,
+} from './components/grid-preview/grid-preview.component';
+import {
+  PublishingComponent,
+  PublishingData,
+} from './components/publishing/publishing.component';
 
 export interface GridBuilderState {
   currentGrid: Partial<BingoGrid> | null;
-  faces: Partial<Face>[];
+  faces: Face[];
+  selectedFaces: Face[];
+  selectedCategory: string;
   selectedTheme: string;
   isGenerating: boolean;
-  step: 'setup' | 'faces' | 'customization' | 'preview' | 'generating';
-  aiSuggestions: string[];
+  currentStep:
+    | 'category'
+    | 'faces'
+    | 'customization'
+    | 'preview'
+    | 'publishing';
+  aiSuggestions: Face[];
+  title: string;
+  description: string;
+  isPublic: boolean;
+  generationProgress: number;
 }
 
 @Component({
-  selector: 'app-grid-builder',
+  selector: 'x86-grid-builder',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    FaceSelectionComponent,
+    CategorySelectionComponent,
+    GridCustomizationComponent,
+    GridPreviewComponent,
+    PublishingComponent,
+  ],
   templateUrl: './grid-builder.component.html',
   styleUrl: './grid-builder.component.scss',
 })
 export class GridBuilderComponent implements OnInit {
   private orchestration = inject(OrchestrationService);
   private realtime = inject(RealtimeService);
+  private supabase = inject(SupabaseService);
 
   // Component State
   state = signal<GridBuilderState>({
     currentGrid: null,
     faces: [],
+    selectedFaces: [],
+    selectedCategory: '',
     selectedTheme: '86xed-dark',
     isGenerating: false,
-    step: 'setup',
+    currentStep: 'category',
     aiSuggestions: [],
+    title: '',
+    description: '',
+    isPublic: false,
+    generationProgress: 0,
   });
 
-  // Form signals
-  gridTitle = signal('');
-  gridDescription = signal('');
-  gridTags = signal<string[]>([]);
-  viralOptions = signal({
-    aiOptimized: true,
-    trending: true,
-    shareable: true,
-  });
+  // Template-required signals
+  categories = signal([
+    {
+      id: 'celebrities',
+      name: 'Celebrities',
+      description: 'Famous faces everyone knows',
+      icon: '⭐',
+    },
+    {
+      id: 'athletes',
+      name: 'Athletes',
+      description: 'Sports personalities',
+      icon: '🏆',
+    },
+    {
+      id: 'politicians',
+      name: 'Politicians',
+      description: 'Political figures',
+      icon: '🏛️',
+    },
+    {
+      id: 'musicians',
+      name: 'Musicians',
+      description: 'Music artists and performers',
+      icon: '🎵',
+    },
+    {
+      id: 'actors',
+      name: 'Actors',
+      description: 'Movie and TV stars',
+      icon: '🎬',
+    },
+  ]);
 
-  // Generation state
-  generatingStep = signal<'faces' | 'optimization' | 'generation' | 'social'>(
-    'faces'
-  );
-  generatingProgress = signal(0);
-  generatedGrid = signal<BingoGrid | null>(null);
-  showSuccessModal = signal(false);
+  searchFaces = signal('');
+  availableFaces = signal<Face[]>([]);
 
-  // Configuration
-  readonly themeOptions = [
-    { value: '86xed-dark', label: '🌙 Dark Mode' },
-    { value: '86xed-light', label: '☀️ Light Mode' },
-    { value: '86xed-neon', label: '⚡ Neon Vibes' },
-  ];
+  // Step management
+  currentStepIndex = signal(0);
+  progressPercentage = signal(0);
 
-  readonly availableThemes = [
-    { id: '86xed-dark', name: 'Dark Mode' },
-    { id: '86xed-light', name: 'Light Mode' },
-    { id: '86xed-neon', name: 'Neon Vibes' },
-  ];
-
-  readonly Math = Math;
-
-  ngOnInit(): void {
-    this.loadAISuggestions();
+  // Computed properties for child components
+  get gridCustomizationData(): GridCustomizationData {
+    return {
+      title: this.state().title,
+      description: this.state().description,
+      isPublic: this.state().isPublic,
+    };
   }
 
-  // Navigation Methods
+  get gridPreviewData(): GridPreviewData {
+    return {
+      title: this.state().title,
+      description: this.state().description,
+      selectedCategory: this.state().selectedCategory,
+      selectedFaces: this.state().selectedFaces,
+      isPublic: this.state().isPublic,
+      isGenerating: this.state().isGenerating,
+    };
+  }
+
+  get publishingData(): PublishingData {
+    return {
+      isGenerating: this.state().isGenerating,
+      generationProgress: this.state().generationProgress,
+      generationStage: this.getGenerationStage(),
+      isComplete:
+        !this.state().isGenerating && this.state().generationProgress === 100,
+      isError: false,
+      generatedGridId:
+        this.state().generationProgress === 100
+          ? 'generated-grid-id'
+          : undefined,
+    };
+  }
+
+  ngOnInit(): void {
+    this.updateProgress();
+  }
+
+  // Template methods
+  getStepTitle(): string {
+    const titles = {
+      category: 'Choose Your Category',
+      faces: 'Select Faces',
+      customization: 'Customize Your Grid',
+      preview: 'Preview & Review',
+      publishing: 'Creating Your Grid',
+    };
+    return titles[this.state().currentStep] || '';
+  }
+
+  getStepDescription(): string {
+    const descriptions = {
+      category: 'Pick a category to get started with face suggestions',
+      faces: 'Select up to 24 faces for your bingo grid',
+      customization: 'Add a title and description to make it yours',
+      preview: 'Review your grid before creating',
+      publishing: 'Generating your viral bingo grid...',
+    };
+    return descriptions[this.state().currentStep] || '';
+  }
+
+  getGenerationStage(): string {
+    const progress = this.state().generationProgress;
+    if (progress < 25) return 'Preparing grid layout...';
+    if (progress < 50) return 'Shuffling face positions...';
+    if (progress < 75) return 'Generating bingo grid...';
+    if (progress < 100) return 'Saving to database...';
+    return 'Complete!';
+  }
+
+  selectCategory(categoryId: string): void {
+    this.state.update((state) => ({
+      ...state,
+      selectedCategory: categoryId,
+      faces: [],
+      selectedFaces: [],
+    }));
+    this.loadFacesForCategory(categoryId);
+  }
+
+  goToStepString(step: string): void {
+    this.state.update((state) => ({
+      ...state,
+      currentStep: step as any,
+    }));
+    this.updateProgress();
+  }
+
   nextStep(): void {
-    const currentStep = this.state().step;
-    const steps: GridBuilderState['step'][] = [
-      'setup',
+    const steps = [
+      'category',
       'faces',
       'customization',
       'preview',
+      'publishing',
     ];
-    const currentIndex = steps.indexOf(currentStep);
-
+    const currentIndex = steps.indexOf(this.state().currentStep);
     if (currentIndex < steps.length - 1) {
       this.state.update((state) => ({
         ...state,
-        step: steps[currentIndex + 1],
+        currentStep: steps[currentIndex + 1] as any,
       }));
+      this.updateProgress();
     }
   }
 
   previousStep(): void {
-    const currentStep = this.state().step;
-    const steps: GridBuilderState['step'][] = [
-      'setup',
+    const steps = [
+      'category',
       'faces',
       'customization',
       'preview',
+      'publishing',
     ];
-    const currentIndex = steps.indexOf(currentStep);
-
+    const currentIndex = steps.indexOf(this.state().currentStep);
     if (currentIndex > 0) {
       this.state.update((state) => ({
         ...state,
-        step: steps[currentIndex - 1],
+        currentStep: steps[currentIndex - 1] as any,
       }));
+      this.updateProgress();
     }
   }
 
-  // Step validation
-  canProceedFromSetup(): boolean {
-    return this.gridTitle().trim().length >= 3;
+  canProceedToNext(): boolean {
+    switch (this.state().currentStep) {
+      case 'category':
+        return !!this.state().selectedCategory;
+      case 'faces':
+        return this.state().selectedFaces.length > 0;
+      case 'customization':
+        return !!this.state().title.trim();
+      default:
+        return true;
+    }
   }
 
-  canProceedFromFaces(): boolean {
-    return this.state().faces.length >= 9;
-  }
-
-  canGenerate(): boolean {
-    return this.canProceedFromSetup() && this.canProceedFromFaces();
-  }
-
-  isStepCompleted(step: GridBuilderState['step']): boolean {
-    const currentStepIndex = [
-      'setup',
-      'faces',
-      'customization',
-      'preview',
-    ].indexOf(this.state().step);
-    const stepIndex = ['setup', 'faces', 'customization', 'preview'].indexOf(
-      step
-    );
-    return stepIndex < currentStepIndex;
-  }
-
-  // Form Methods
   updateGridTitle(title: string): void {
-    this.gridTitle.set(title);
+    this.state.update((state) => ({
+      ...state,
+      title: title,
+    }));
   }
 
-  updateGridDescription(event: Event): void {
-    const target = event.target as HTMLTextAreaElement;
-    this.gridDescription.set(target.value);
+  updateGridDescription(description: string): void {
+    this.state.update((state) => ({
+      ...state,
+      description: description,
+    }));
   }
 
-  updateTheme(theme: string): void {
+  togglePublic(): void {
+    this.state.update((state) => ({
+      ...state,
+      isPublic: !state.isPublic,
+    }));
+  }
+
+  // Event handlers for child components
+  onCategorySelected(categoryId: string): void {
+    this.selectCategory(categoryId);
+    this.nextStep();
+  }
+
+  onThemeSelected(theme: string): void {
     this.state.update((state) => ({
       ...state,
       selectedTheme: theme,
     }));
   }
 
-  addTag(tag: string): void {
-    const trimmedTag = tag.trim().toLowerCase();
-    if (trimmedTag && !this.gridTags().includes(trimmedTag)) {
-      this.gridTags.update((tags) => [...tags, trimmedTag]);
-    }
+  onPreviewEdit(): void {
+    this.goToStepString('customization');
   }
 
-  removeTag(tag: string): void {
-    this.gridTags.update((tags) => tags.filter((t) => t !== tag));
+  onPreviewGenerate(): void {
+    this.generateGrid();
   }
 
-  toggleViralOption(option: string): void {
-    this.viralOptions.update((options) => {
-      const newOptions = { ...options };
-      if (option in newOptions) {
-        (newOptions as any)[option] = !(newOptions as any)[option];
-      }
-      return newOptions;
-    });
-  }
-
-  // Face Management
-  onFilesSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files) {
-      this.processSelectedFiles(Array.from(input.files));
-    }
-  }
-
-  private async processSelectedFiles(files: File[]): Promise<void> {
-    for (const file of files) {
-      const imageUrl = await this.uploadImage(file);
-      const newFace: Partial<Face> = {
-        id: this.generateFaceId(),
-        imageUrl,
-        name: '',
-        celebrity: false,
-        confidence: 0.5,
-        position: { x: 0, y: 0 },
-        metadata: {
-          aiDetected: false,
-          verified: false,
-          source: 'user-upload',
-        },
-      } as Partial<Face>;
-
-      this.state.update((state) => ({
-        ...state,
-        faces: [...state.faces, newFace],
-      }));
-
-      // Process with AI (this will be handled by the orchestration service)
-      // For now, just simulate processing
-      setTimeout(() => {
-        this.state.update((state) => ({
-          ...state,
-          faces: state.faces.map((face) =>
-            face.id === newFace.id
-              ? ({
-                  ...face,
-                  metadata: {
-                    ...face.metadata!,
-                    aiDetected: true,
-                  },
-                } as Partial<Face>)
-              : face
-          ),
-        }));
-      }, 2000);
-    }
-  }
-
-  updateFaceName(index: number, event: Event): void {
-    const target = event.target as HTMLInputElement;
+  onPublishingCancel(): void {
     this.state.update((state) => ({
       ...state,
-      faces: state.faces.map((face, i) =>
-        i === index ? { ...face, name: target.value } : face
-      ),
+      isGenerating: false,
+      currentStep: 'preview',
     }));
   }
 
-  removeFace(index: number): void {
-    this.state.update((state) => ({
-      ...state,
-      faces: state.faces.filter((_, i) => i !== index),
-    }));
+  onPublishingPlay(gridId: string): void {
+    // Navigate to play page - would use router in real implementation
+    console.log('Playing grid:', gridId);
+    // this.router.navigate(['/play', gridId]);
   }
 
-  async getAICelebrityPack(): Promise<void> {
-    // Simulate AI celebrity suggestions
-    const celebrityPack = [
-      {
-        name: 'Drake',
-        imageUrl: 'https://example.com/drake.jpg',
-        celebrity: true,
-        confidence: 0.95,
-      },
-      {
-        name: 'Taylor Swift',
-        imageUrl: 'https://example.com/taylor.jpg',
-        celebrity: true,
-        confidence: 0.98,
-      },
-      {
-        name: 'Elon Musk',
-        imageUrl: 'https://example.com/elon.jpg',
-        celebrity: true,
-        confidence: 0.92,
-      },
-    ];
-
-    for (const celeb of celebrityPack) {
-      const newFace: Partial<Face> = {
-        id: this.generateFaceId(),
-        imageUrl: celeb.imageUrl,
-        name: celeb.name,
-        celebrity: celeb.celebrity,
-        confidence: celeb.confidence,
-        position: { x: 0, y: 0 },
-        metadata: {
-          aiDetected: true,
-          verified: true,
-          source: 'ai-celebrity-pack',
-        },
-      } as Partial<Face>;
-
-      this.state.update((state) => ({
-        ...state,
-        faces: [...state.faces, newFace],
-      }));
-    }
+  onPublishingShare(gridId: string): void {
+    // Share grid functionality
+    console.log('Sharing grid:', gridId);
+    // Implement sharing logic
   }
 
-  searchFaces(query: string): void {
-    // Implement face search functionality
-    console.log('Searching for faces:', query);
+  onPublishingView(gridId: string): void {
+    // Navigate to view page
+    console.log('Viewing grid:', gridId);
+    // this.router.navigate(['/grid', gridId]);
   }
 
-  // Preview Methods
-  getPreviewFaces(): Partial<Face>[] {
-    const faces = this.state().faces.slice(0, 24); // 25 slots minus free space
-
-    // Fill remaining slots with placeholders
-    while (faces.length < 24) {
-      faces.push({
-        id: `placeholder-${faces.length}`,
-        imageUrl: '',
-        name: `Face ${faces.length + 1}`,
-        celebrity: false,
-        confidence: 0,
-        position: { x: 0, y: 0 },
-        metadata: {
-          aiDetected: false,
-          verified: false,
-          source: 'placeholder',
-        },
-      });
-    }
-
-    return faces;
-  }
-
-  getViralScore(): number {
-    const celebrityCount = this.state().faces.filter((f) => f.celebrity).length;
-    const totalFaces = this.state().faces.length;
-    const avgQuality =
-      totalFaces > 0
-        ? this.state().faces.reduce((sum, f) => sum + (f.confidence || 0), 0) /
-          totalFaces
-        : 0;
-
-    const celebrityScore = (celebrityCount / totalFaces) * 40;
-    const qualityScore = avgQuality * 30;
-    const completenessScore = Math.min(totalFaces / 9, 1) * 20;
-    const viralBonus = this.viralOptions().aiOptimized ? 10 : 0;
-
-    return Math.round(
-      celebrityScore + qualityScore + completenessScore + viralBonus
-    );
-  }
-
-  getCelebrityCount(): number {
-    return this.state().faces.filter((f) => f.celebrity).length;
-  }
-
-  getQualityScore(): number {
-    const faces = this.state().faces;
-    if (faces.length === 0) return 0;
-
-    const avgQuality =
-      faces.reduce((sum, f) => sum + (f.confidence || 0), 0) / faces.length;
-    return Math.round(avgQuality * 100);
-  }
-
-  getTrendingTagCount(): number {
-    const trendingTags = [
-      'viral',
-      'relatable',
-      'mood',
-      'aesthetic',
-      'trending',
-    ];
-    return this.gridTags().filter((tag) => trendingTags.includes(tag)).length;
-  }
-
-  generateSocialCaption(platform: 'twitter' | 'instagram'): string {
-    const title = this.gridTitle() || 'My Viral Bingo';
-    const hashtags =
-      platform === 'twitter'
-        ? '#86xed #bingo #viral'
-        : '#86xed #BingoChallenge #Viral';
-
-    return `${title} ${hashtags}`;
-  }
-
-  // Generation Process
-  async generateGrid(): Promise<void> {
-    this.state.update((state) => ({
-      ...state,
-      isGenerating: true,
-      step: 'generating',
-    }));
-
-    this.generatingStep.set('faces');
-    this.generatingProgress.set(0);
-
-    try {
-      // Simulate multi-step generation process
-      await this.simulateGenerationStep('faces', 25);
-      await this.simulateGenerationStep('optimization', 50);
-      await this.simulateGenerationStep('generation', 75);
-      await this.simulateGenerationStep('social', 100);
-
-      // Create the grid input
-      const gridInput: GridInput = {
-        title: this.gridTitle(),
-        description: this.gridDescription(),
-        faces: this.state().faces,
-        theme: this.state().selectedTheme,
-        tags: this.gridTags(),
-      };
-
-      // Use orchestration service to create the grid
-      this.orchestration.createViralGrid(gridInput).subscribe({
-        next: (grid) => {
-          this.generatedGrid.set(grid);
-          this.showSuccessModal.set(true);
-          this.state.update((state) => ({
-            ...state,
-            isGenerating: false,
-            currentGrid: grid,
-          }));
-        },
-        error: (error) => {
-          console.error('Grid generation failed:', error);
-          this.state.update((state) => ({
-            ...state,
-            isGenerating: false,
-          }));
-        },
-      });
-    } catch (error) {
-      console.error('Generation process failed:', error);
-      this.state.update((state) => ({
-        ...state,
-        isGenerating: false,
-      }));
-    }
-  }
-
-  private async simulateGenerationStep(
-    step: 'faces' | 'optimization' | 'generation' | 'social',
-    targetProgress: number
-  ): Promise<void> {
-    this.generatingStep.set(step);
-
-    const currentProgress = this.generatingProgress();
-    const duration = 2000; // 2 seconds per step
-    const steps = 20;
-    const increment = (targetProgress - currentProgress) / steps;
-
-    for (let i = 0; i < steps; i++) {
-      await new Promise((resolve) => setTimeout(resolve, duration / steps));
-      this.generatingProgress.update((progress) =>
-        Math.min(progress + increment, targetProgress)
-      );
-    }
-  }
-
-  // Action Methods
-  saveDraft(): void {
-    const draftData = {
-      title: this.gridTitle(),
-      description: this.gridDescription(),
-      faces: this.state().faces,
-      theme: this.state().selectedTheme,
-      tags: this.gridTags(),
-      step: this.state().step,
-    };
-
-    localStorage.setItem('86xed-grid-draft', JSON.stringify(draftData));
-    console.log('Draft saved successfully');
-  }
-
-  shareGrid(): void {
-    if (this.generatedGrid()) {
-      // Navigate to sharing page or open share modal
-      console.log('Sharing grid:', this.generatedGrid()?.id);
-    }
-  }
-
-  viewGrid(): void {
-    if (this.generatedGrid()) {
-      // Navigate to grid view page
-      console.log('Viewing grid:', this.generatedGrid()?.id);
-    }
-  }
-
-  createAnother(): void {
-    // Reset the component state for new grid creation
-    this.resetGridBuilder();
-  }
-
-  applySuggestion(suggestion: string): void {
-    this.gridTitle.set(suggestion);
-  }
-
-  // Utility Methods
-  private async loadAISuggestions(): Promise<void> {
-    // Simulate AI-generated title suggestions
-    const suggestions = [
-      'Things I Do Instead of Studying',
-      'Red Flags in Dating',
-      'Millennial Problems Bingo',
-      'Working From Home Reality',
-      'Gen Z Starter Pack',
-    ];
-
-    this.state.update((state) => ({
-      ...state,
-      aiSuggestions: suggestions,
-    }));
-  }
-
-  private async uploadImage(file: File): Promise<string> {
-    // Simulate image upload process
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.readAsDataURL(file);
-    });
-  }
-
-  private generateFaceId(): string {
-    return 'face_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-  }
-
-  private resetGridBuilder(): void {
-    this.state.set({
+  onPublishingCreateAnother(): void {
+    this.state.update(() => ({
       currentGrid: null,
       faces: [],
+      selectedFaces: [],
+      selectedCategory: '',
       selectedTheme: '86xed-dark',
       isGenerating: false,
-      step: 'setup',
+      currentStep: 'category',
       aiSuggestions: [],
-    });
+      title: '',
+      description: '',
+      isPublic: false,
+      generationProgress: 0,
+    }));
+  }
 
-    this.gridTitle.set('');
-    this.gridDescription.set('');
-    this.gridTags.set([]);
-    this.generatedGrid.set(null);
-    this.showSuccessModal.set(false);
+  onPublishingRetry(): void {
+    this.generateGrid();
+  }
+
+  onPublishingGoBack(): void {
+    this.goToStepString('preview');
+  }
+
+  fillWithAISuggestions(): void {
+    const needed = 24 - this.state().selectedFaces.length;
+    const suggestions = this.state().aiSuggestions.slice(0, needed);
+    this.state.update((state) => ({
+      ...state,
+      selectedFaces: [...state.selectedFaces, ...suggestions],
+    }));
+  }
+
+  clearAllFaces(): void {
+    this.state.update((state) => ({
+      ...state,
+      selectedFaces: [],
+    }));
+  }
+
+  getEmptySlots(): number[] {
+    const filled = this.state().selectedFaces.length;
+    return Array(24 - filled).fill(0);
+  }
+
+  onSearchFaces(query: string): void {
+    this.searchFaces.set(query);
+    // Filter available faces based on query
+    // Implementation would filter this.availableFaces()
+  }
+
+  isFaceSelected(face: Face): boolean {
+    return this.state().selectedFaces.some((f) => f.id === face.id);
+  }
+
+  toggleFaceSelection(face: Face): void {
+    const selected = this.state().selectedFaces;
+    const isSelected = selected.some((f) => f.id === face.id);
+
+    if (isSelected) {
+      this.state.update((state) => ({
+        ...state,
+        selectedFaces: state.selectedFaces.filter((f) => f.id !== face.id),
+      }));
+    } else if (selected.length < 24) {
+      this.state.update((state) => ({
+        ...state,
+        selectedFaces: [...state.selectedFaces, face],
+      }));
+    }
+  }
+
+  onFaceDragStart(event: DragEvent, face: Face): void {
+    // Implementation for drag and drop
+  }
+
+  onFaceDrop(event: DragEvent, index: number): void {
+    // Implementation for drag and drop
+  }
+
+  onFaceDragOver(event: DragEvent): void {
+    event.preventDefault();
+  }
+
+  getGridPreview(): (Face | null)[] {
+    const grid = new Array(25).fill(null);
+    // Fill with selected faces (skip center cell at index 12)
+    let faceIndex = 0;
+    for (let i = 0; i < 25; i++) {
+      if (i !== 12 && faceIndex < this.state().selectedFaces.length) {
+        grid[i] = this.state().selectedFaces[faceIndex];
+        faceIndex++;
+      }
+    }
+    return grid;
+  }
+
+  generateGrid(): void {
+    this.state.update((state) => ({
+      ...state,
+      currentStep: 'publishing',
+      isGenerating: true,
+      generationProgress: 0,
+    }));
+
+    // Simulate grid generation
+    this.simulateGridGeneration();
+  }
+
+  private updateProgress(): void {
+    const steps = [
+      'category',
+      'faces',
+      'customization',
+      'preview',
+      'publishing',
+    ];
+    const currentIndex = steps.indexOf(this.state().currentStep);
+    this.currentStepIndex.set(currentIndex);
+    this.progressPercentage.set((currentIndex / (steps.length - 1)) * 100);
+  }
+
+  private loadFacesForCategory(categoryId: string): void {
+    // Mock data for faces
+    const mockFaces: Face[] = Array.from({ length: 20 }, (_, i) => ({
+      id: `face_${categoryId}_${i}`,
+      imageUrl: `https://picsum.photos/200/200?random=${i}`,
+      name: `${categoryId} Face ${i + 1}`,
+      celebrity: Math.random() > 0.7,
+      confidence: Math.random(),
+      position: { x: 0, y: 0 },
+      metadata: {
+        aiDetected: true,
+        verified: true,
+        source: `${categoryId}_dataset`,
+      },
+    }));
+
+    this.availableFaces.set(mockFaces);
+    this.state.update((state) => ({
+      ...state,
+      faces: mockFaces,
+      aiSuggestions: mockFaces.slice(0, 8),
+    }));
+  }
+
+  private simulateGridGeneration(): void {
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.random() * 20;
+      if (progress >= 100) {
+        progress = 100;
+        clearInterval(interval);
+        this.state.update((state) => ({
+          ...state,
+          isGenerating: false,
+          generationProgress: 100,
+        }));
+      } else {
+        this.state.update((state) => ({
+          ...state,
+          generationProgress: progress,
+        }));
+      }
+    }, 500);
   }
 }

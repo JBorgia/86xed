@@ -10,7 +10,7 @@ import { HeaderComponent } from './layout/header/header.component';
 })
 export class AppComponent implements OnInit {
   title = '86xed';
-  
+
   ngOnInit() {
     // Set initial theme
     document.body.setAttribute('data-theme', '86xed-light');

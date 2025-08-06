@@ -1,0 +1,100 @@
+<div class="face-selection">
+  <!-- Selected Faces Section -->
+  <div class="selected-faces-section">
+    <div class="section-header">
+      <h3>Selected Faces ({{ selectedFaces.length }}/24)</h3>
+      <div class="face-actions">
+        <button
+          class="btn btn-secondary"
+          (click)="onFillWithAI()"
+          [disabled]="selectedFaces.length >= 24"
+        >
+          🤖 Fill with AI Suggestions
+        </button>
+        <button class="btn btn-outline" (click)="onClearAll()">
+          Clear All
+        </button>
+      </div>
+    </div>
+
+    <div class="selected-faces-grid">
+      @for (face of selectedFaces; track face.id; let i = $index) {
+      <div class="selected-face">
+        <img [src]="face.imageUrl" [alt]="face.name" />
+        <div class="face-overlay">
+          <span class="face-name">{{ face.name }}</span>
+          <button class="remove-face" (click)="onToggleFace(face)">×</button>
+        </div>
+      </div>
+      }
+
+      <!-- Empty slots -->
+      @for (slot of getEmptySlots(); track $index) {
+      <div class="empty-face-slot">
+        <span>+</span>
+      </div>
+      }
+    </div>
+  </div>
+
+  <!-- Available Faces Section -->
+  <div class="available-faces-section">
+    <div class="section-header">
+      <h3>Available {{ categoryName }}</h3>
+      <div class="search-bar">
+        <input
+          type="text"
+          placeholder="Search faces..."
+          [value]="searchQuery"
+          (input)="onSearch($any($event.target).value)"
+          class="search-input"
+        />
+      </div>
+    </div>
+
+    <!-- AI Suggestions -->
+    @if (aiSuggestions.length > 0) {
+    <div class="ai-suggestions-section">
+      <h4>🤖 AI Recommended</h4>
+      <div class="faces-grid">
+        @for (face of aiSuggestions; track face.id) {
+        <button
+          class="face-card"
+          [class.selected]="isFaceSelected(face)"
+          (click)="onToggleFace(face)"
+        >
+          <img [src]="face.imageUrl" [alt]="face.name" />
+          <div class="face-info">
+            <span class="face-name">{{ face.name }}</span>
+            @if (face.celebrity) {
+            <span class="celebrity-badge">⭐</span>
+            }
+          </div>
+        </button>
+        }
+      </div>
+    </div>
+    }
+
+    <!-- All Available Faces -->
+    <div class="all-faces-section">
+      <div class="faces-grid">
+        @for (face of availableFaces; track face.id) {
+        <button
+          class="face-card"
+          [class.selected]="isFaceSelected(face)"
+          (click)="onToggleFace(face)"
+        >
+          <img [src]="face.imageUrl" [alt]="face.name" />
+          <div class="face-info">
+            <span class="face-name">{{ face.name }}</span>
+            @if (face.celebrity) {
+            <span class="celebrity-badge">⭐</span>
+            }
+          </div>
+        </button>
+        }
+      </div>
+    </div>
+  </div>
+</div>

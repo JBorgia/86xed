@@ -24,8 +24,6 @@ export default [
           style: 'kebab-case',
         },
       ],
-      // Enforce external templates for modern Angular development
-      '@angular-eslint/no-inline-template': 'error',
     },
   },
   {

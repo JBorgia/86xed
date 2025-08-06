@@ -1,102 +1,130 @@
 <div class="grid-builder-container">
+  <!-- Progress Header -->
   <header class="grid-builder-header">
-    <h1>🎯 Grid Builder</h1>
-    <p>Create your viral bingo grid step by step</p>
-  </header>
+    <div class="progress-section">
+      <h1>{{ getStepTitle() }}</h1>
+      <p>{{ getStepDescription() }}</p>
 
-  <main class="grid-builder-main">
-    <div class="setup-step">
-      <div class="step-content">
-        <h2>🎯 Create Your Viral Bingo</h2>
-        <p>Let's build a bingo grid that's designed to go viral! Start by giving it a catchy title and theme.</p>
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="progressPercentage()"></div>
+      </div>
 
-        <div class="form-group">
-          <label for="title">Grid Title *</label>
-          <input 
-            id="title"
-            type="text"
-            [value]="gridTitle()"
-            (input)="updateGridTitle($any($event.target).value)"
-            placeholder="e.g., 'Things I Do Instead of Studying' or 'Red Flags in Dating'"
-            maxlength="100"
-            class="form-input">
-          <small>Make it relatable and shareable!</small>
-        </div>
-
-        <div class="form-group">
-          <label for="description">Description</label>
-          <textarea 
-            id="description"
-            [value]="gridDescription()"
-            (input)="updateGridDescription($event)"
-            placeholder="Add a description to make your bingo even more engaging..."
-            maxlength="500"
-            rows="3"
-            class="form-textarea">
-          </textarea>
-        </div>
-
-        <div class="form-group">
-          <label for="theme">Theme</label>
-          <select 
-            id="theme"
-            [value]="state().selectedTheme"
-            (change)="updateTheme($any($event.target).value)"
-            class="form-select">
-            <option value="86xed-dark">🌙 Dark Mode</option>
-            <option value="86xed-light">☀️ Light Mode</option>
-            <option value="86xed-neon">⚡ Neon Vibes</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <div class="tag-input-container">
-            <label for="tags-input">Tags (for better discovery)</label>
-            <div class="tag-input-wrapper">
-              <input 
-                id="tags-input"
-                type="text" 
-                #tagInput
-                (keydown.enter)="addTag(tagInput.value); tagInput.value = ''"
-                placeholder="Add tags like 'relatable', 'college', 'dating'..."
-                class="form-input">
-              <button type="button" (click)="addTag(tagInput.value); tagInput.value = ''" class="btn btn-secondary">Add</button>
-            </div>
-          </div>
-          <div class="tags-list">
-            @for (tag of gridTags(); track tag) {
-              <span class="tag">
-                {{ tag }}
-                <button type="button" (click)="removeTag(tag)" class="tag-remove">×</button>
-              </span>
-            }
-          </div>
-        </div>
-
-        @if (state().aiSuggestions.length > 0) {
-          <div class="ai-suggestions">
-            <h4>💡 AI Suggestions</h4>
-            <div class="suggestions-grid">
-              @for (suggestion of state().aiSuggestions; track suggestion) {
-                <button 
-                  class="suggestion-card"
-                  (click)="applySuggestion(suggestion)">
-                  {{ suggestion }}
-                </button>
-              }
-            </div>
-          </div>
+      <div class="step-indicators">
+        @for (step of ['category', 'faces', 'customization', 'preview',
+        'publishing']; track step; let i = $index) {
+        <button
+          class="step-indicator"
+          [class.active]="currentStepIndex() === i"
+          [class.completed]="currentStepIndex() > i"
+          (click)="goToStepString(step)"
+          [attr.aria-label]="'Go to step ' + (i + 1)"
+          type="button"
+        >
+          <span class="step-number">{{ i + 1 }}</span>
+        </button>
         }
       </div>
-
-      <div class="step-actions">
-        <button 
-          class="btn btn-primary btn-large" 
-          (click)="nextStep()" 
-          [disabled]="!canProceedFromSetup()">
-          Continue to Add Faces →
-        </button>
-      </div>
     </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="grid-builder-main">
+    <!-- Category Selection Step -->
+    @if (state().currentStep === 'category') {
+    <div class="step-content category-step">
+      <x86-category-selection
+        [categories]="categories()"
+        [selectedCategoryId]="state().selectedCategory"
+        (categorySelected)="onCategorySelected($event)"
+      ></x86-category-selection>
+    </div>
+    }
+
+    <!-- Face Selection Step -->
+    @if (state().currentStep === 'faces') {
+    <div class="step-content faces-step">
+      <x86-face-selection
+        [selectedFaces]="state().selectedFaces"
+        [availableFaces]="availableFaces()"
+        [aiSuggestions]="state().aiSuggestions"
+        [categoryName]="state().selectedCategory"
+        [searchQuery]="searchFaces()"
+        (faceToggled)="toggleFaceSelection($event)"
+        (fillWithAI)="fillWithAISuggestions()"
+        (clearAll)="clearAllFaces()"
+        (searchChanged)="onSearchFaces($event)"
+      ></x86-face-selection>
+    </div>
+    }
+
+    <!-- Customization Step -->
+    @if (state().currentStep === 'customization') {
+    <div class="step-content customization-step">
+      <x86-grid-customization
+        [customizationData]="gridCustomizationData"
+        [selectedTheme]="state().selectedTheme"
+        (titleChanged)="updateGridTitle($event)"
+        (descriptionChanged)="updateGridDescription($event)"
+        (publicToggled)="togglePublic()"
+        (themeSelected)="onThemeSelected($event)"
+      ></x86-grid-customization>
+    </div>
+    }
+
+    <!-- Preview Step -->
+    @if (state().currentStep === 'preview') {
+    <div class="step-content preview-step">
+      <x86-grid-preview
+        [previewData]="gridPreviewData"
+        (editRequested)="onPreviewEdit()"
+        (generateRequested)="onPreviewGenerate()"
+      ></x86-grid-preview>
+    </div>
+    }
+
+    <!-- Publishing Step -->
+    @if (state().currentStep === 'publishing') {
+    <div class="step-content publishing-step">
+      <x86-publishing
+        [publishingData]="publishingData"
+        (cancelRequested)="onPublishingCancel()"
+        (playRequested)="onPublishingPlay($event)"
+        (shareRequested)="onPublishingShare($event)"
+        (viewRequested)="onPublishingView($event)"
+        (createAnotherRequested)="onPublishingCreateAnother()"
+        (retryRequested)="onPublishingRetry()"
+        (goBackRequested)="onPublishingGoBack()"
+      ></x86-publishing>
+    </div>
+    }
   </main>
+
+  <!-- Navigation Footer -->
+  <footer class="grid-builder-footer">
+    <div class="nav-actions">
+      @if (state().currentStep !== 'category' && state().currentStep !==
+      'publishing') {
+      <button class="btn btn-outline" (click)="previousStep()">
+        ← Previous
+      </button>
+      } @if (state().currentStep !== 'preview' && state().currentStep !==
+      'publishing') {
+      <button
+        class="btn btn-primary"
+        (click)="nextStep()"
+        [disabled]="!canProceedToNext()"
+      >
+        Next →
+      </button>
+      } @if (state().currentStep === 'preview') {
+      <button
+        class="btn btn-primary btn-large"
+        (click)="generateGrid()"
+        [disabled]="state().isGenerating"
+      >
+        🚀 Create Grid
+      </button>
+      }
+    </div>
+  </footer>
 </div>

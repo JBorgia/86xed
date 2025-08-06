@@ -1,0 +1,67 @@
+<div class="grid-preview">
+  <div class="preview-section">
+    <div class="preview-header">
+      <h3>{{ previewData.title || 'Untitled Grid' }}</h3>
+      @if (previewData.description) {
+      <p class="grid-description">{{ previewData.description }}</p>
+      }
+    </div>
+
+    <div class="bingo-grid-preview">
+      @for (cell of getGridPreview(); track $index; let i = $index) {
+      <div class="bingo-cell" [class.center-cell]="i === 12">
+        @if (i === 12) {
+        <div class="center-content">
+          <span class="bingo-text">86XED</span>
+        </div>
+        } @else if (cell) {
+        <img [src]="cell.imageUrl" [alt]="cell.name" />
+        <span class="cell-name">{{ cell.name }}</span>
+        } @else {
+        <div class="empty-cell">?</div>
+        }
+      </div>
+      }
+    </div>
+
+    <div class="preview-stats">
+      <div class="stat">
+        <span class="stat-label">Category:</span>
+        <span class="stat-value">{{
+          previewData.selectedCategory || 'None'
+        }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Faces:</span>
+        <span class="stat-value"
+          >{{ previewData.selectedFaces.length }}/24</span
+        >
+      </div>
+      <div class="stat">
+        <span class="stat-label">Visibility:</span>
+        <span class="stat-value">{{
+          previewData.isPublic ? 'Public' : 'Private'
+        }}</span>
+      </div>
+    </div>
+
+    <div class="preview-actions">
+      <button
+        class="btn btn-secondary"
+        (click)="onEdit()"
+        [disabled]="previewData.isGenerating"
+      >
+        ✏️ Edit Details
+      </button>
+      <button
+        class="btn btn-primary btn-large"
+        (click)="onGenerate()"
+        [disabled]="previewData.isGenerating || !canGenerate()"
+      >
+        @if (previewData.isGenerating) {
+        <span class="spinner-sm"></span>
+        Creating... } @else { 🚀 Create Grid }
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,110 @@
+<div
+  class="publishing"
+  [class.is-active]="publishingData.isGenerating || publishingData.isComplete"
+>
+  @if (publishingData.isGenerating) {
+  <div class="generation-progress">
+    <div class="progress-header">
+      <h3>Creating Your Grid</h3>
+      <p class="stage-text">{{ publishingData.generationStage }}</p>
+    </div>
+
+    <div class="progress-bar">
+      <div
+        class="progress-fill"
+        [style.width.%]="publishingData.generationProgress"
+      ></div>
+    </div>
+
+    <div class="progress-percentage">
+      {{ publishingData.generationProgress }}%
+    </div>
+
+    <div class="generation-stages">
+      <div
+        class="stage"
+        [class.active]="isStageActive('preparing')"
+        [class.complete]="isStageComplete('preparing')"
+      >
+        <div class="stage-icon">📋</div>
+        <span>Preparing</span>
+      </div>
+      <div
+        class="stage"
+        [class.active]="isStageActive('shuffling')"
+        [class.complete]="isStageComplete('shuffling')"
+      >
+        <div class="stage-icon">🔀</div>
+        <span>Shuffling</span>
+      </div>
+      <div
+        class="stage"
+        [class.active]="isStageActive('generating')"
+        [class.complete]="isStageComplete('generating')"
+      >
+        <div class="stage-icon">🎯</div>
+        <span>Generating</span>
+      </div>
+      <div
+        class="stage"
+        [class.active]="isStageActive('saving')"
+        [class.complete]="isStageComplete('saving')"
+      >
+        <div class="stage-icon">💾</div>
+        <span>Saving</span>
+      </div>
+    </div>
+
+    <button class="btn btn-secondary btn-cancel" (click)="onCancel()">
+      Cancel
+    </button>
+  </div>
+  } @else if (publishingData.isComplete && !publishingData.isError) {
+  <div class="generation-complete">
+    <div class="success-icon">🎉</div>
+    <h3>Grid Created Successfully!</h3>
+    <p>
+      Your bingo grid is ready to play. Share it with others or start playing
+      right away.
+    </p>
+
+    <div class="completion-actions">
+      <button class="btn btn-primary" (click)="onPlayGrid()">
+        🎮 Play Now
+      </button>
+      <button class="btn btn-secondary" (click)="onShareGrid()">
+        🔗 Share Grid
+      </button>
+      <button class="btn btn-secondary" (click)="onViewGrid()">
+        👁️ View Grid
+      </button>
+    </div>
+
+    <button class="btn btn-text" (click)="onCreateAnother()">
+      ➕ Create Another Grid
+    </button>
+  </div>
+  } @else if (publishingData.isError) {
+  <div class="generation-error">
+    <div class="error-icon">⚠️</div>
+    <h3>Generation Failed</h3>
+    <p class="error-message">
+      {{
+        publishingData.errorMessage ||
+          'An unexpected error occurred while creating your grid.'
+      }}
+    </p>
+
+    <div class="error-actions">
+      <button class="btn btn-primary" (click)="onRetry()">🔄 Try Again</button>
+      <button class="btn btn-secondary" (click)="onGoBack()">← Go Back</button>
+    </div>
+  </div>
+  } @else {
+  <div class="publishing-placeholder">
+    <div class="placeholder-icon">🚀</div>
+    <h3>Ready to Create</h3>
+    <p>Review your grid details and click "Create Grid" when you're ready.</p>
+  </div>
+  }
+</div>
