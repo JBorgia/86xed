@@ -14,7 +14,11 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@86xed/data-access": ["data-access/src/index.ts"],
+      "@86xed/models": ["models/src/index.ts"],
+      "@86xed/ui-components": ["ui-components/src/index.ts"]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }

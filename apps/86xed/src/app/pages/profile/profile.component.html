@@ -1,0 +1,234 @@
+<div class="profile-container">
+  @if (user()) {
+    <!-- Profile Header -->
+    <section class="profile-header">
+      <div class="profile-info">
+        <div class="avatar">
+          @if (user()?.avatar_url) {
+            <img [src]="user()?.avatar_url" [alt]="user()?.username">
+          } @else {
+            <div class="avatar-placeholder">{{ getInitials(user()?.username || '') }}</div>
+          }
+        </div>
+        
+        <div class="user-details">
+          <h1>@{{ user()?.username }}</h1>
+          <p class="user-email">{{ user()?.email }}</p>
+          <div class="user-stats">
+            <div class="stat">
+              <span class="stat-number">{{ userGrids().length }}</span>
+              <span class="stat-label">Grids Created</span>
+            </div>
+            <div class="stat">
+              <span class="stat-number">{{ getTotalShares() }}</span>
+              <span class="stat-label">Total Shares</span>
+            </div>
+            <div class="stat">
+              <span class="stat-number">{{ getViralGridsCount() }}</span>
+              <span class="stat-label">Viral Grids</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="profile-actions">
+        <x86-button variant="outline" (click)="editProfile()">
+          ⚙️ Edit Profile
+        </x86-button>
+        <x86-button variant="primary" routerLink="/grid-builder">
+          🎨 Create New Grid
+        </x86-button>
+      </div>
+    </section>
+
+    <!-- Creator Dashboard -->
+    <section class="creator-dashboard">
+      <h2>📊 Creator Dashboard</h2>
+      
+      <div class="dashboard-grid">
+        <div class="dashboard-card">
+          <div class="card-header">
+            <h3>🔥 Viral Performance</h3>
+          </div>
+          <div class="card-content">
+            <div class="performance-metric">
+              <span class="metric-value">{{ Math.round(getAverageViralScore() * 100) }}%</span>
+              <span class="metric-label">Average Viral Score</span>
+            </div>
+            <div class="performance-chart">
+              @for (grid of getTopViralGrids(); track grid.id) {
+                <div class="chart-bar">
+                  <div class="bar-fill" [style.width.%]="grid.viralScore * 100"></div>
+                  <span class="bar-label">{{ grid.title }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-card">
+          <div class="card-header">
+            <h3>💰 Earnings Overview</h3>
+          </div>
+          <div class="card-content">
+            <div class="earnings-summary">
+              <div class="earning-item">
+                <span class="earning-amount">${{ mockEarnings().total }}</span>
+                <span class="earning-label">Total Earnings</span>
+              </div>
+              <div class="earning-item">
+                <span class="earning-amount">${{ mockEarnings().thisMonth }}</span>
+                <span class="earning-label">This Month</span>
+              </div>
+            </div>
+            <div class="monetized-grids">
+              <h4>💎 Monetized Grids</h4>
+              @if (getMonetizedGrids().length === 0) {
+                <p class="no-monetized">No monetized grids yet. Create viral content to start earning!</p>
+              } @else {
+                @for (grid of getMonetizedGrids(); track grid.id) {
+                  <div class="monetized-grid">
+                    <span class="grid-name">{{ grid.title }}</span>
+                    <span class="grid-earnings">${{ getMockEarningsForGrid(grid.id) }}</span>
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-card">
+          <div class="card-header">
+            <h3>📈 Recent Activity</h3>
+          </div>
+          <div class="card-content">
+            <div class="activity-list">
+              @for (activity of getRecentActivity(); track $index) {
+                <div class="activity-item">
+                  <span class="activity-icon">{{ activity.icon }}</span>
+                  <div class="activity-details">
+                    <p class="activity-text">{{ activity.text }}</p>
+                    <span class="activity-time">{{ activity.time }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- User's Grids -->
+    <section class="user-grids">
+      <div class="section-header">
+        <h2>🎨 My Grids</h2>
+        <div class="grid-filters">
+          <button 
+            class="filter-button"
+            [class.active]="currentFilter() === 'all'"
+            (click)="setFilter('all')">
+            All ({{ userGrids().length }})
+          </button>
+          <button 
+            class="filter-button"
+            [class.active]="currentFilter() === 'viral'"
+            (click)="setFilter('viral')">
+            Viral ({{ getViralGridsCount() }})
+          </button>
+          <button 
+            class="filter-button"
+            [class.active]="currentFilter() === 'monetized'"
+            (click)="setFilter('monetized')">
+            Monetized ({{ getMonetizedGrids().length }})
+          </button>
+        </div>
+      </div>
+
+      @if (gridsLoading()) {
+        <div class="loading-grids">
+          @for (item of [1,2,3,4]; track item) {
+            <div class="grid-card-skeleton"></div>
+          }
+        </div>
+      } @else if (filteredGrids().length === 0) {
+        <div class="empty-grids">
+          <div class="empty-icon">🎨</div>
+          <h3>No grids found</h3>
+          <p>Start creating viral bingo grids to see them here!</p>
+          <x86-button variant="primary" routerLink="/grid-builder">
+            Create Your First Grid
+          </x86-button>
+        </div>
+      } @else {
+        <div class="grids-grid">
+          @for (grid of filteredGrids(); track grid.id) {
+            <div class="grid-card" [routerLink]="['/grid', grid.id]">
+              <div class="grid-preview">
+                <div class="preview-header">
+                  <span class="grid-title">{{ grid.title }}</span>
+                  <div class="status-badges">
+                    @if (grid.viralScore >= 0.8) {
+                      <span class="badge viral">🔥 Viral</span>
+                    }
+                    @if (grid.status === 'monetized') {
+                      <span class="badge monetized">💰 Earning</span>
+                    }
+                  </div>
+                </div>
+              </div>
+              
+              <div class="grid-stats">
+                <div class="stat">
+                  <span class="stat-icon">🔥</span>
+                  <span>{{ Math.round(grid.viralScore * 100) }}%</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-icon">📱</span>
+                  <span>{{ grid.socialMetrics.shares }}</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-icon">❤️</span>
+                  <span>{{ grid.socialMetrics.likes }}</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-icon">💬</span>
+                  <span>{{ grid.socialMetrics.comments }}</span>
+                </div>
+              </div>
+              
+              <div class="grid-actions">
+                <button class="action-button" (click)="editGrid(grid.id); $event.stopPropagation()">
+                  ✏️ Edit
+                </button>
+                <button class="action-button" (click)="shareGrid(grid.id); $event.stopPropagation()">
+                  📱 Share
+                </button>
+                @if (grid.viralScore >= 0.8 && grid.status !== 'monetized') {
+                  <button class="action-button monetize" (click)="monetizeGrid(grid.id); $event.stopPropagation()">
+                    💰 Monetize
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </section>
+  } @else {
+    <!-- Not logged in -->
+    <div class="auth-required">
+      <div class="auth-message">
+        <h2>🔒 Profile Access Required</h2>
+        <p>Please sign in to view your profile and manage your grids.</p>
+        <div class="auth-actions">
+          <x86-button variant="primary" routerLink="/auth/login">
+            Sign In
+          </x86-button>
+          <x86-button variant="outline" routerLink="/auth/register">
+            Create Account
+          </x86-button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

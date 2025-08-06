@@ -1,0 +1,30 @@
+<button 
+  [class]="buttonClasses()"
+  [type]="type"
+  [disabled]="disabled || loading"
+  [attr.aria-disabled]="disabled || loading"
+  [attr.aria-busy]="loading"
+  [attr.aria-label]="ariaLabel">
+  
+  <span class="x86-btn__content" [class.x86-btn__content--hidden]="loading">
+    @if (icon && iconPosition === 'left') {
+      <span class="x86-btn__icon x86-btn__icon--left">{{ icon }}</span>
+    }
+    
+    @if (!iconOnly) {
+      <ng-content></ng-content>
+    }
+    
+    @if (icon && iconPosition === 'right') {
+      <span class="x86-btn__icon x86-btn__icon--right">{{ icon }}</span>
+    }
+  </span>
+  
+  @if (loading) {
+    <span class="x86-btn__spinner" aria-hidden="true">
+      <svg class="x86-btn__spinner-icon" viewBox="0 0 24 24">
+        <circle class="x86-btn__spinner-path" cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+      </svg>
+    </span>
+  }
+</button>

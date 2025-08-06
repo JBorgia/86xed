@@ -1,0 +1,14 @@
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-4) var(--space-6);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+  
+  h1 {
+    color: var(--primary);
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+}

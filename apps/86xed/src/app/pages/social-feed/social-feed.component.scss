@@ -1,0 +1,18 @@
+.social-feed-container {
+  padding: 2rem;
+  max-width: var(--content-max-width, 1200px);
+  margin: 0 auto;
+
+  h1 {
+    color: var(--primary-color);
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    color: var(--text-secondary);
+    text-align: center;
+    font-size: 1.1rem;
+    line-height: 1.6;
+  }
+}

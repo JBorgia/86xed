@@ -1,0 +1,46 @@
+<div class="gallery-container">
+  <!-- Header Component -->
+  <app-gallery-header />
+
+  <!-- Filters Component -->
+  <app-gallery-filters
+    [filters]="filters()"
+    [categoryOptions]="categoryOptions"
+    [sortOptions]="sortOptions"
+    (filterChange)="updateFilter($event.key, $event.value)"
+  />
+
+  <!-- Gallery Grid -->
+  <section class="gallery-section">
+    @if (gridsLoading()) {
+    <div class="loading-grid">
+      @for (item of [1,2,3,4,5,6,7,8,9]; track item) {
+      <div class="grid-card-skeleton"></div>
+      }
+    </div>
+    } @else if (filteredGrids().length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon">🎨</div>
+      <h3>No grids found</h3>
+      <p>
+        Try adjusting your filters or be the first to create a grid in this
+        category!
+      </p>
+      <a class="btn-primary" routerLink="/grid-builder"> Create First Grid </a>
+    </div>
+    } @else {
+    <div class="grids-grid">
+      @for (grid of filteredGrids(); track grid.id) {
+      <app-grid-card [grid]="grid" />
+      }
+    </div>
+
+    <!-- Load More Component -->
+    <app-load-more
+      [hasMore]="hasMoreGrids()"
+      [loading]="loadingMore()"
+      (loadMore)="loadMoreGrids()"
+    />
+    }
+  </section>
+</div>

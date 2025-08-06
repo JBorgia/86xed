@@ -1,0 +1,80 @@
+:root {
+  [data-theme="86xed-dark"] {
+    /* Theme metadata */
+    --theme-name: "86xed Dark";
+    --theme-description: "Dark theme optimized for late-night grid creation";
+    --theme-author: "86xed Team";
+    --theme-version: "1.0.0";
+    --theme-category: "base";
+    --theme-tags: "dark, viral, bingo, social, night";
+
+    /* Brand Colors (brighter for dark mode) */
+    --primary: hsl(260, 70%, 60%);
+    --secondary: hsl(320, 70%, 60%);
+    --accent: hsl(45, 90%, 70%);
+    
+    /* Text Colors */
+    --text: hsl(0, 0%, 95%);
+    --text-inverse: hsl(0, 0%, 8%);
+    --text-muted: hsl(0, 0%, 68%);
+    
+    /* Background Colors */
+    --background: hsl(0, 0%, 8%);
+    --background-inverse: hsl(0, 0%, 98%);
+    --surface: hsl(0, 0%, 15%);
+    --surface-elevated: hsl(0, 0%, 20%);
+    
+    /* Border Colors */
+    --border: hsl(0, 0%, 26%);
+    --border-muted: hsl(0, 0%, 20%);
+    
+    /* Surface Colors */
+    --surface-hover: hsl(0, 0%, 18%);
+    --surface-disabled: hsl(0, 0%, 12%);
+    
+    /* State Colors */
+    --error: hsl(0, 85%, 65%);
+    --error-dark: hsl(0, 85%, 55%);
+    --success: hsl(120, 60%, 55%);
+    --warning: hsl(45, 85%, 65%);
+    
+    /* Alpha Colors */
+    --primary-alpha-10: hsla(260, 70%, 50%, 0.1);
+    --error-alpha-10: hsla(0, 85%, 65%, 0.1);
+
+    /* Gray scale (inverted for dark mode) */
+    --gray-50: hsl(0, 0%, 8%);
+    --gray-100: hsl(0, 0%, 15%);
+    --gray-200: hsl(0, 0%, 20%);
+    --gray-300: hsl(0, 0%, 26%);
+    --gray-500: hsl(0, 0%, 50%);
+    --gray-700: hsl(0, 0%, 80%);
+    --gray-900: hsl(0, 0%, 95%);
+
+    /* Same spacing, radius as light theme */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-10: 2.5rem;
+    --space-12: 3rem;
+
+    --radius-sm: 0.25rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    --radius-2xl: 1.5rem;
+
+    /* Adjusted shadows for dark mode */
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.4);
+    --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.5);
+
+    --transition-base: 300ms ease;
+    --transition-bounce: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+}

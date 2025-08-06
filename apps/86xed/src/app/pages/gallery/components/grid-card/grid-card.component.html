@@ -1,0 +1,67 @@
+<div class="grid-card" [routerLink]="['/grid', grid.id]">
+  <div class="grid-image">
+    <div class="grid-preview">
+      <div class="preview-header">
+        <span class="grid-title">{{ grid.title }}</span>
+        <div
+          class="viral-badge"
+          [ngClass]="getViralBadgeClass(grid.viralScore)"
+        >
+          {{ getViralBadgeText(grid.viralScore) }}
+        </div>
+      </div>
+
+      <!-- Mini grid preview -->
+      <div class="mini-grid">
+        @for (cell of getMiniGridCells(); track $index) {
+        <div class="mini-cell" [class.center]="$index === 4">
+          @if ($index === 4) {
+          <span>FREE</span>
+          } @else {
+          <div class="cell-placeholder">{{ cell }}</div>
+          }
+        </div>
+        }
+      </div>
+    </div>
+
+    @if (grid.status === 'monetized') {
+    <div class="monetized-badge">💰 Available as Products</div>
+    }
+  </div>
+
+  <div class="grid-info">
+    <h3>{{ grid.title }}</h3>
+    <p class="grid-description">{{ grid.description }}</p>
+
+    <div class="grid-tags">
+      @for (tag of grid.metadata.tags.slice(0, 3); track tag) {
+      <span class="tag">{{ tag }}</span>
+      }
+    </div>
+
+    <div class="grid-stats">
+      <div class="stat">
+        <span class="stat-icon">🔥</span>
+        <span>{{ roundNumber(grid.viralScore * 100) }}%</span>
+      </div>
+      <div class="stat">
+        <span class="stat-icon">📱</span>
+        <span>{{ grid.socialMetrics.shares }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-icon">❤️</span>
+        <span>{{ grid.socialMetrics.likes }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-icon">💬</span>
+        <span>{{ grid.socialMetrics.comments }}</span>
+      </div>
+    </div>
+
+    <div class="grid-meta">
+      <span class="created-date">{{ formatDate(grid.createdAt) }}</span>
+      <span class="creator">by @{{ grid.createdBy }}</span>
+    </div>
+  </div>
+</div>

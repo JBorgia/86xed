@@ -1,0 +1,36 @@
+<section class="filters-section">
+  <div class="filters-container">
+    <div class="search-filter">
+      <input
+        type="text"
+        placeholder="🔍 Search grids by title, tags, or creator..."
+        [ngModel]="filters.searchTerm"
+        (ngModelChange)="onFilterChange('searchTerm', $event)"
+      />
+    </div>
+
+    <div class="category-filter">
+      <select
+        [ngModel]="filters.category"
+        (ngModelChange)="onFilterChange('category', $event)"
+      >
+        <option value="" disabled>Select Category</option>
+        <option *ngFor="let option of categoryOptions" [value]="option.value">
+          {{ option.label }}
+        </option>
+      </select>
+    </div>
+
+    <div class="sort-filter">
+      <select
+        [ngModel]="filters.sortBy"
+        (ngModelChange)="onFilterChange('sortBy', $event)"
+      >
+        <option value="" disabled>Sort By</option>
+        <option *ngFor="let option of sortOptions" [value]="option.value">
+          {{ option.label }}
+        </option>
+      </select>
+    </div>
+  </div>
+</section>

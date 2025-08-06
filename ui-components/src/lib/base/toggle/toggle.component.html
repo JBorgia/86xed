@@ -1,0 +1,56 @@
+<div [class]="wrapperClasses">
+  <div class="x86-toggle__wrapper">
+    <button
+      type="button"
+      role="switch"
+      [class]="toggleClasses"
+      [id]="id"
+      [disabled]="disabled"
+      [attr.aria-checked]="checked"
+      [attr.aria-label]="ariaLabel"
+      [attr.aria-labelledby]="ariaLabelledBy"
+      [attr.aria-invalid]="error ? 'true' : null"
+      [attr.aria-describedby]="error ? id + '-error' : hint ? id + '-hint' : null"
+      (click)="toggle()"
+      (keydown)="onKeyDown($event)">
+      
+      <span class="x86-toggle__thumb" [class.x86-toggle__thumb--checked]="checked"></span>
+      
+      <!-- Hidden input for form compatibility -->
+      <input
+        type="checkbox"
+        [name]="name"
+        [checked]="checked"
+        [required]="required"
+        [disabled]="disabled"
+        tabindex="-1"
+        aria-hidden="true"
+        style="position: absolute; opacity: 0; pointer-events: none;"
+      />
+    </button>
+    
+    @if (label) {
+      <label 
+        class="x86-toggle__label" 
+        [for]="id"
+        [class.x86-toggle__label--disabled]="disabled">
+        {{ label }}
+        @if (required) {
+          <span class="x86-toggle__required" aria-hidden="true">*</span>
+        }
+      </label>
+    }
+  </div>
+  
+  @if (hint && !error) {
+    <div class="x86-toggle__hint" [id]="id + '-hint'">
+      {{ hint }}
+    </div>
+  }
+  
+  @if (error) {
+    <div class="x86-toggle__error" [id]="id + '-error'" role="alert">
+      {{ error }}
+    </div>
+  }
+</div>

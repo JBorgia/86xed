@@ -1,0 +1,56 @@
+<div [class]="wrapperClasses">
+  @if (label) {
+    <label class="x86-textarea__label" [for]="id">
+      {{ label }}
+      @if (required) {
+        <span class="x86-textarea__required" aria-hidden="true">*</span>
+      }
+    </label>
+  }
+  
+  <div class="x86-textarea__wrapper">
+    <textarea
+      [class]="textareaClasses"
+      [id]="id"
+      [name]="name"
+      [placeholder]="placeholder || ''"
+      [value]="value"
+      [disabled]="disabled"
+      [readonly]="readonly"
+      [required]="required"
+      [rows]="autosize ? undefined : rows"
+      [attr.maxlength]="maxLength"
+      [attr.aria-invalid]="error || isOverLimit ? 'true' : null"
+      [attr.aria-describedby]="error ? id + '-error' : hint ? id + '-hint' : null"
+      [cdkTextareaAutosize]="autosize"
+      [cdkAutosizeMinRows]="autosize ? minRows : undefined"
+      [cdkAutosizeMaxRows]="autosize ? maxRows : undefined"
+      (input)="onInput($event)"
+      (blur)="onBlur()">
+    </textarea>
+  </div>
+  
+  <div class="x86-textarea__footer">
+    @if (hint && !error && !isOverLimit) {
+      <div class="x86-textarea__hint" [id]="id + '-hint'">
+        {{ hint }}
+      </div>
+    }
+    
+    @if (error || isOverLimit) {
+      <div class="x86-textarea__error" [id]="id + '-error'" role="alert">
+        @if (isOverLimit) {
+          Character limit exceeded
+        } @else {
+          {{ error }}
+        }
+      </div>
+    }
+    
+    @if (showCharacterCount) {
+      <div class="x86-textarea__character-count" [class.x86-textarea__character-count--over]="isOverLimit">
+        {{ characterCount }}{{ maxLength ? '/' + maxLength : '' }}
+      </div>
+    }
+  </div>
+</div>

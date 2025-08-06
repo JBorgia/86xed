@@ -1,0 +1,15 @@
+@if (hasMore) {
+<div class="load-more-section">
+  <button
+    class="btn-outline btn-lg"
+    (click)="loadMore.emit()"
+    [disabled]="loading"
+  >
+    @if (loading) {
+    <span>Loading More...</span>
+    } @else {
+    <span>Load More Grids</span>
+    }
+  </button>
+</div>
+}

@@ -1,0 +1,73 @@
+<div class="x86-dropdown" [class.x86-dropdown--open]="isOpen">
+  <ng-template #triggerTemplate>
+    <ng-content select="[slot=trigger]"></ng-content>
+  </ng-template>
+  
+  @if (triggerTemplate.createEmbeddedView({}).rootNodes.length === 0) {
+    <button
+      type="button"
+      [class]="triggerClasses"
+      [disabled]="disabled"
+      class="x86-dropdown__trigger"
+      (click)="toggle()"
+      (keydown)="onKeyDown($event)"
+      [attr.aria-expanded]="isOpen"
+      [attr.aria-haspopup]="true">
+      
+      {{ triggerText }}
+      
+      @if (showTriggerIcon) {
+        <span class="x86-dropdown__trigger-icon" [class.x86-dropdown__trigger-icon--open]="isOpen">
+          {{ triggerIcon }}
+        </span>
+      }
+    </button>
+  } @else {
+    <div 
+      [class]="triggerClasses"
+      (click)="toggle()"
+      (keydown)="onKeyDown($event)"
+      [attr.aria-expanded]="isOpen"
+      [attr.aria-haspopup]="true"
+      role="button"
+      [attr.tabindex]="disabled ? -1 : 0">
+      <ng-container *ngTemplateOutlet="triggerTemplate"></ng-container>
+    </div>
+  }
+  
+  @if (isOpen) {
+    <div class="x86-dropdown__overlay" 
+         (click)="close()"
+         (keydown)="onOverlayKeydown($event)"
+         tabindex="0"
+         role="button"
+         [attr.aria-label]="'Close dropdown'"></div>
+    
+    <div class="x86-dropdown__menu" 
+         [class]="'x86-dropdown__menu--' + position"
+         role="menu"
+         cdkTrapFocus>
+      
+      @for (item of items; track item.value) {
+        @if (item.divider) {
+          <div class="x86-dropdown__divider" role="separator"></div>
+        } @else {
+          <button
+            type="button"
+            class="x86-dropdown__item"
+            [class.x86-dropdown__item--disabled]="item.disabled"
+            [disabled]="item.disabled"
+            role="menuitem"
+            (click)="selectItem(item)">
+            
+            @if (item.icon) {
+              <span class="x86-dropdown__item-icon">{{ item.icon }}</span>
+            }
+            
+            <span class="x86-dropdown__item-label">{{ item.label }}</span>
+          </button>
+        }
+      }
+    </div>
+  }
+</div>

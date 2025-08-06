@@ -1,0 +1,8 @@
+// Component-specific styles only
+// Global button styles are inherited from the design system
+
+:host {
+  .btn {
+    font-size: 0.9rem; // Slightly smaller for header
+  }
+}

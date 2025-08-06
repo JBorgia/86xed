@@ -1,0 +1,118 @@
+.x86-select {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  
+  &__label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text);
+    
+    .x86-select__required {
+      color: var(--error);
+      margin-left: var(--space-1);
+    }
+  }
+  
+  &__wrapper {
+    position: relative;
+  }
+  
+  &__trigger {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    color: var(--text);
+    transition: all var(--transition-base);
+    cursor: pointer;
+    appearance: none;
+    
+    &:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-alpha-10);
+    }
+    
+    // Size variants
+    &--sm {
+      padding: var(--space-2) var(--space-8) var(--space-2) var(--space-3);
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+    }
+    
+    &--md {
+      padding: var(--space-3) var(--space-10) var(--space-3) var(--space-4);
+      font-size: 0.9rem;
+      line-height: 1.375rem;
+    }
+    
+    &--lg {
+      padding: var(--space-4) var(--space-12) var(--space-4) var(--space-5);
+      font-size: 1rem;
+      line-height: 1.5rem;
+    }
+    
+    // State variants
+    &--error {
+      border-color: var(--error);
+      
+      &:focus {
+        border-color: var(--error);
+        box-shadow: 0 0 0 3px var(--error-alpha-10);
+      }
+    }
+    
+    &--disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: var(--surface-disabled);
+    }
+  }
+  
+  &__icon {
+    position: absolute;
+    right: var(--space-3);
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--text-muted);
+    pointer-events: none;
+    
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
+  
+  &__hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.25;
+  }
+  
+  &__error {
+    font-size: 0.75rem;
+    color: var(--error);
+    line-height: 1.25;
+    font-weight: 500;
+  }
+  
+  // Component state styles
+  &--error {
+    .x86-select__label {
+      color: var(--error);
+    }
+  }
+  
+  &--disabled {
+    .x86-select__label {
+      opacity: 0.5;
+    }
+    
+    .x86-select__icon {
+      opacity: 0.5;
+    }
+  }
+}

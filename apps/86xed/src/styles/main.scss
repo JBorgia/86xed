@@ -1,0 +1,10 @@
+// 86xed Platform - Modern SCSS Architecture
+
+// Load themes first (CSS custom properties)
+@use 'themes';
+
+// Load base styles
+@use 'base';
+
+// Load component styles
+@use 'components';
