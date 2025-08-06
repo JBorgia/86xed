@@ -2,17 +2,17 @@
   <!-- Selected Faces Section -->
   <div class="selected-faces-section">
     <div class="section-header">
-      <h3>Selected Faces ({{ selectedFaces.length }}/24)</h3>
+      <h3>AI-Selected Faces ({{ selectedFaces.length }}/24)</h3>
       <div class="face-actions">
         <button
           class="btn btn-secondary"
           (click)="onFillWithAI()"
           [disabled]="selectedFaces.length >= 24"
         >
-          🤖 Fill with AI Suggestions
+          🤖 Fill Remaining Slots
         </button>
         <button class="btn btn-outline" (click)="onClearAll()">
-          Clear All
+          🔄 Reset to Top 24
         </button>
       </div>
     </div>
@@ -23,7 +23,13 @@
         <img [src]="face.imageUrl" [alt]="face.name" />
         <div class="face-overlay">
           <span class="face-name">{{ face.name }}</span>
-          <button class="remove-face" (click)="onToggleFace(face)">×</button>
+          <button
+            class="remove-face"
+            (click)="onToggleFace(face)"
+            title="Remove this face (will be replaced with next best)"
+          >
+            ×
+          </button>
         </div>
       </div>
       }
@@ -55,7 +61,11 @@
     <!-- AI Suggestions -->
     @if (aiSuggestions.length > 0) {
     <div class="ai-suggestions-section">
-      <h4>🤖 AI Recommended</h4>
+      <h4>🤖 Next Best Recommendations</h4>
+      <p class="suggestions-help">
+        Click to add, or click × on selected faces above to automatically
+        replace with better options
+      </p>
       <div class="faces-grid">
         @for (face of aiSuggestions; track face.id) {
         <button

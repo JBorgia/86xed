@@ -359,17 +359,42 @@ export class GridBuilderComponent implements OnInit {
 
   fillWithAISuggestions(): void {
     const needed = 24 - this.state().selectedFaces.length;
-    const suggestions = this.state().aiSuggestions.slice(0, needed);
-    this.state.update((state) => ({
-      ...state,
-      selectedFaces: [...state.selectedFaces, ...suggestions],
-    }));
+    if (needed <= 0) return;
+
+    const allFaces = this.availableFaces();
+    const selectedIds = this.state().selectedFaces.map((f) => f.id);
+
+    // Get the next best available faces to fill the grid
+    const newFaces = allFaces
+      .filter((f) => !selectedIds.includes(f.id))
+      .slice(0, needed);
+
+    this.state.update((state) => {
+      const newSelectedFaces = [...state.selectedFaces, ...newFaces];
+      const newSelectedIds = newSelectedFaces.map((f) => f.id);
+
+      // Update AI suggestions to show the next available faces
+      const newSuggestions = allFaces
+        .filter((f) => !newSelectedIds.includes(f.id))
+        .slice(0, 8);
+
+      return {
+        ...state,
+        selectedFaces: newSelectedFaces,
+        aiSuggestions: newSuggestions,
+      };
+    });
   }
 
   clearAllFaces(): void {
+    // Reset to the top 24 recommendations instead of clearing completely
+    const allFaces = this.availableFaces();
+    const topRecommendations = allFaces.slice(0, 24);
+
     this.state.update((state) => ({
       ...state,
-      selectedFaces: [],
+      selectedFaces: topRecommendations,
+      aiSuggestions: allFaces.slice(24, 32),
     }));
   }
 
@@ -393,15 +418,56 @@ export class GridBuilderComponent implements OnInit {
     const isSelected = selected.some((f) => f.id === face.id);
 
     if (isSelected) {
-      this.state.update((state) => ({
-        ...state,
-        selectedFaces: state.selectedFaces.filter((f) => f.id !== face.id),
-      }));
+      // When removing a face, replace it with the next best recommendation
+      const allFaces = this.availableFaces();
+      const selectedIds = selected.map((f) => f.id);
+
+      // Find the next best face that isn't already selected
+      const replacement = allFaces.find(
+        (f) => !selectedIds.includes(f.id) && f.id !== face.id
+      );
+
+      this.state.update((state) => {
+        // Remove the clicked face
+        const newSelectedFaces = state.selectedFaces.filter(
+          (f) => f.id !== face.id
+        );
+
+        // Add replacement if available
+        if (replacement) {
+          newSelectedFaces.push(replacement);
+        }
+
+        // Update AI suggestions to show the next set of available faces
+        const newSelectedIds = newSelectedFaces.map((f) => f.id);
+        const newSuggestions = allFaces
+          .filter((f) => !newSelectedIds.includes(f.id))
+          .slice(0, 8);
+
+        return {
+          ...state,
+          selectedFaces: newSelectedFaces,
+          aiSuggestions: newSuggestions,
+        };
+      });
     } else if (selected.length < 24) {
-      this.state.update((state) => ({
-        ...state,
-        selectedFaces: [...state.selectedFaces, face],
-      }));
+      // Adding a face (from AI suggestions or available faces)
+      this.state.update((state) => {
+        const newSelectedFaces = [...state.selectedFaces, face];
+        const newSelectedIds = newSelectedFaces.map((f) => f.id);
+
+        // Update AI suggestions to exclude newly selected face
+        const allFaces = this.availableFaces();
+        const newSuggestions = allFaces
+          .filter((f) => !newSelectedIds.includes(f.id))
+          .slice(0, 8);
+
+        return {
+          ...state,
+          selectedFaces: newSelectedFaces,
+          aiSuggestions: newSuggestions,
+        };
+      });
     }
   }
 
@@ -456,13 +522,15 @@ export class GridBuilderComponent implements OnInit {
   }
 
   private loadFacesForCategory(categoryId: string): void {
-    // Mock data for faces
-    const mockFaces: Face[] = Array.from({ length: 20 }, (_, i) => ({
+    // Generate more faces to have enough for replacements (50 total)
+    const mockFaces: Face[] = Array.from({ length: 50 }, (_, i) => ({
       id: `face_${categoryId}_${i}`,
-      imageUrl: `https://picsum.photos/200/200?random=${i}`,
+      imageUrl: `https://picsum.photos/200/200?random=${
+        i + Math.floor(Math.random() * 1000)
+      }`,
       name: `${categoryId} Face ${i + 1}`,
       celebrity: Math.random() > 0.7,
-      confidence: Math.random(),
+      confidence: 0.9 - i * 0.01, // Higher confidence for earlier faces (AI recommendations)
       position: { x: 0, y: 0 },
       metadata: {
         aiDetected: true,
@@ -471,11 +539,17 @@ export class GridBuilderComponent implements OnInit {
       },
     }));
 
-    this.availableFaces.set(mockFaces);
+    // Sort by confidence to get best recommendations first
+    const sortedFaces = mockFaces.sort((a, b) => b.confidence - a.confidence);
+
+    this.availableFaces.set(sortedFaces);
     this.state.update((state) => ({
       ...state,
-      faces: mockFaces,
-      aiSuggestions: mockFaces.slice(0, 8),
+      faces: sortedFaces,
+      // Pre-select top 24 faces as initial recommendations
+      selectedFaces: sortedFaces.slice(0, 24),
+      // Show next 8 as AI suggestions for potential replacements
+      aiSuggestions: sortedFaces.slice(24, 32),
     }));
   }
 
