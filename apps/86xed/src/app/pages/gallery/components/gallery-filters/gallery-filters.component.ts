@@ -14,7 +14,7 @@ export interface FilterOption {
 }
 
 @Component({
-  selector: 'app-gallery-filters',
+  selector: 'x86-gallery-filters',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './gallery-filters.component.html',

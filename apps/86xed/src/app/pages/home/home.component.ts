@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
 @Component({
-  selector: 'app-home',
+  selector: 'x86-home',
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './home.component.html',

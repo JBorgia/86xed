@@ -10,7 +10,7 @@ import { SupabaseService } from '../../services/api/supabase.service';
 import { BingoGrid, tile } from '../../types';
 
 // Sub-components
-import { tileSelectionComponent } from './components/tile-selection/tile-selection.component';
+import { TileSelectionComponent } from './components/tile-selection/tile-selection.component';
 import {
   CategorySelectionComponent,
   Category,
@@ -55,7 +55,7 @@ export interface GridBuilderState {
     CommonModule,
     RouterModule,
     FormsModule,
-    tileSelectionComponent,
+    TileSelectionComponent,
     CategorySelectionComponent,
     GridCustomizationComponent,
     GridPreviewComponent,
@@ -120,7 +120,7 @@ export class GridBuilderComponent implements OnInit {
   ]);
 
   searchTiles = signal('');
-  availableTiles = signal<Tile[]>([]);
+  availableTiles = signal<tile[]>([]);
 
   // Step management
   currentStepIndex = signal(0);
@@ -428,14 +428,20 @@ export class GridBuilderComponent implements OnInit {
       );
 
       this.state.update((state) => {
-        // Remove the clicked tile
-        const newSelectedTiles = state.selectedTiles.filter(
-          (f) => f.id !== tile.id
+        // Find the position of the tile to remove
+        const tilePosition = state.selectedTiles.findIndex(
+          (f) => f.id === tile.id
         );
 
-        // Add replacement if available
+        // Create new array with replacement at the exact position
+        const newSelectedTiles = [...state.selectedTiles];
+
         if (replacement) {
-          newSelectedTiles.push(replacement);
+          // Replace the tile at its exact position
+          newSelectedTiles[tilePosition] = replacement;
+        } else {
+          // If no replacement available, remove the tile
+          newSelectedTiles.splice(tilePosition, 1);
         }
 
         // Update AI suggestions to show the next set of available tiles
@@ -483,7 +489,7 @@ export class GridBuilderComponent implements OnInit {
     event.preventDefault();
   }
 
-  getGridPreview(): (Tile | null)[] {
+  getGridPreview(): (tile | null)[] {
     const grid = new Array(25).fill(null);
     // Fill with selected tiles (skip center cell at index 12)
     let tileIndex = 0;

@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 export type CheckboxSize = 'sm' | 'md' | 'lg';
 
 @Component({
-  selector: 'x86-checkbox',
+  selector: 'u86-checkbox',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './checkbox.component.html',
@@ -14,9 +14,9 @@ export type CheckboxSize = 'sm' | 'md' | 'lg';
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => CheckboxComponent),
-      multi: true
-    }
-  ]
+      multi: true,
+    },
+  ],
 })
 export class CheckboxComponent implements ControlValueAccessor {
   @Input() label?: string;
@@ -30,11 +30,15 @@ export class CheckboxComponent implements ControlValueAccessor {
   @Input() name?: string;
 
   private _checked = false;
-  
+
   // ControlValueAccessor methods
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onChange = (_value: boolean) => { /* Implemented by Angular forms */ };
-  onTouched = () => { /* Implemented by Angular forms */ };
+  onChange = (_value: boolean) => {
+    /* Implemented by Angular forms */
+  };
+  onTouched = () => {
+    /* Implemented by Angular forms */
+  };
 
   get checked(): boolean {
     return this._checked;
@@ -69,21 +73,21 @@ export class CheckboxComponent implements ControlValueAccessor {
 
   get checkboxClasses(): string {
     const classes = ['ui-checkbox__input'];
-    
+
     classes.push(`ui-checkbox__input--${this.size}`);
-    
+
     if (this.error) classes.push('ui-checkbox__input--error');
     if (this.disabled) classes.push('ui-checkbox__input--disabled');
-    
+
     return classes.join(' ');
   }
 
   get wrapperClasses(): string {
     const classes = ['ui-checkbox'];
-    
+
     if (this.error) classes.push('ui-checkbox--error');
     if (this.disabled) classes.push('ui-checkbox--disabled');
-    
+
     return classes.join(' ');
   }
 }

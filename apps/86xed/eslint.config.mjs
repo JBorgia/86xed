@@ -12,7 +12,7 @@ export default [
         'error',
         {
           type: 'attribute',
-          prefix: 'app',
+          prefix: 'x86',
           style: 'camelCase',
         },
       ],
@@ -20,7 +20,7 @@ export default [
         'error',
         {
           type: 'element',
-          prefix: 'app',
+          prefix: 'x86',
           style: 'kebab-case',
         },
       ],
@@ -28,7 +28,16 @@ export default [
   },
   {
     files: ['**/*.html'],
-    // Override or add rules here
-    rules: {},
+    // Template-specific rules for Angular 17+ support
+    rules: {
+      // Ensure @for, @if, @else syntax is supported and properly formatted
+      '@angular-eslint/template/no-negated-async': 'error',
+      '@angular-eslint/template/prefer-control-flow': 'warn',
+      '@angular-eslint/template/use-track-by-function': 'warn',
+      '@angular-eslint/template/conditional-complexity': [
+        'error',
+        { maxComplexity: 5 },
+      ],
+    },
   },
 ];

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 @Component({
-  selector: 'app-gallery-header',
+  selector: 'x86-gallery-header',
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './gallery-header.component.html',

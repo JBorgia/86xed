@@ -2,7 +2,7 @@
   "name": "86xed",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
-  "prefix": "app",
+  "prefix": "x86",
   "sourceRoot": "apps/86xed/src",
   "tags": [],
   "targets": {

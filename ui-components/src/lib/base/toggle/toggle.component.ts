@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 export type ToggleSize = 'sm' | 'md' | 'lg';
 
 @Component({
-  selector: 'x86-toggle',
+  selector: 'u86-toggle',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './toggle.component.html',
@@ -14,9 +14,9 @@ export type ToggleSize = 'sm' | 'md' | 'lg';
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => ToggleComponent),
-      multi: true
-    }
-  ]
+      multi: true,
+    },
+  ],
 })
 export class ToggleComponent implements ControlValueAccessor {
   @Input() label?: string;
@@ -31,11 +31,15 @@ export class ToggleComponent implements ControlValueAccessor {
   @Input() ariaLabelledBy?: string;
 
   private _checked = false;
-  
+
   // ControlValueAccessor methods
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onChange = (_value: boolean) => { /* Implemented by Angular forms */ };
-  onTouched = () => { /* Implemented by Angular forms */ };
+  onChange = (_value: boolean) => {
+    /* Implemented by Angular forms */
+  };
+  onTouched = () => {
+    /* Implemented by Angular forms */
+  };
 
   get checked(): boolean {
     return this._checked;
@@ -63,7 +67,7 @@ export class ToggleComponent implements ControlValueAccessor {
 
   toggle(): void {
     if (this.disabled) return;
-    
+
     this._checked = !this._checked;
     this.onChange(this._checked);
     this.onTouched();
@@ -78,22 +82,22 @@ export class ToggleComponent implements ControlValueAccessor {
 
   get toggleClasses(): string {
     const classes = ['ui-toggle__switch'];
-    
+
     classes.push(`ui-toggle__switch--${this.size}`);
-    
+
     if (this._checked) classes.push('ui-toggle__switch--checked');
     if (this.error) classes.push('ui-toggle__switch--error');
     if (this.disabled) classes.push('ui-toggle__switch--disabled');
-    
+
     return classes.join(' ');
   }
 
   get wrapperClasses(): string {
     const classes = ['ui-toggle'];
-    
+
     if (this.error) classes.push('ui-toggle--error');
     if (this.disabled) classes.push('ui-toggle--disabled');
-    
+
     return classes.join(' ');
   }
 }

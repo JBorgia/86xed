@@ -1,9 +1,9 @@
 <div class="gallery-container">
   <!-- Header Component -->
-  <app-gallery-header />
+  <x86-gallery-header />
 
   <!-- Filters Component -->
-  <app-gallery-filters
+  <x86-gallery-filters
     [filters]="filters()"
     [categoryOptions]="categoryOptions"
     [sortOptions]="sortOptions"
@@ -31,12 +31,12 @@
     } @else {
     <div class="grids-grid">
       @for (grid of filteredGrids(); track grid.id) {
-      <app-grid-card [grid]="grid" />
+      <x86-grid-card [grid]="grid" />
       }
     </div>
 
     <!-- Load More Component -->
-    <app-load-more
+    <x86-load-more
       [hasMore]="hasMoreGrids()"
       [loading]="loadingMore()"
       (loadMore)="loadMoreGrids()"

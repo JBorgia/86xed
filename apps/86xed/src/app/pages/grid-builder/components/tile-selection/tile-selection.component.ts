@@ -9,14 +9,14 @@ import { tile } from '../../../../types';
   templateUrl: './tile-selection.component.html',
   styleUrl: './tile-selection.component.scss',
 })
-export class tileSelectionComponent {
+export class TileSelectionComponent {
   @Input() selectedTiles: tile[] = [];
   @Input() availableTiles: tile[] = [];
   @Input() aiSuggestions: tile[] = [];
-  @Input() categoryName: string = '';
-  @Input() searchQuery: string = '';
+  @Input() categoryName = '';
+  @Input() searchQuery = '';
 
-  @Output() tileToggled = new EventEmitter<Tile>();
+  @Output() tileToggled = new EventEmitter<tile>();
   @Output() fillWithAI = new EventEmitter<void>();
   @Output() clearAll = new EventEmitter<void>();
   @Output() searchChanged = new EventEmitter<string>();

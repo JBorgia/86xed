@@ -1,4 +1,11 @@
-import { Component, Input, Output, EventEmitter, ViewChild, TemplateRef } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  ViewChild,
+  TemplateRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { OverlayModule } from '@angular/cdk/overlay';
 
@@ -11,14 +18,20 @@ export interface DropdownItem {
 }
 
 export type DropdownTrigger = 'click' | 'hover';
-export type DropdownPosition = 'bottom-start' | 'bottom-end' | 'top-start' | 'top-end' | 'left' | 'right';
+export type DropdownPosition =
+  | 'bottom-start'
+  | 'bottom-end'
+  | 'top-start'
+  | 'top-end'
+  | 'left'
+  | 'right';
 
 @Component({
-  selector: 'x86-dropdown',
+  selector: 'u86-dropdown',
   standalone: true,
   imports: [CommonModule, OverlayModule],
   templateUrl: './dropdown.component.html',
-  styleUrl: './dropdown.component.scss'
+  styleUrl: './dropdown.component.scss',
 })
 export class DropdownComponent {
   @Input() items: DropdownItem[] = [];
@@ -29,18 +42,19 @@ export class DropdownComponent {
   @Input() triggerText = 'Options';
   @Input() triggerIcon = '▼';
   @Input() showTriggerIcon = true;
-  
+
   @Output() itemSelected = new EventEmitter<DropdownItem>();
   @Output() opened = new EventEmitter<void>();
   @Output() closed = new EventEmitter<void>();
 
-  @ViewChild('triggerTemplate', { static: true }) triggerTemplate!: TemplateRef<unknown>;
+  @ViewChild('triggerTemplate', { static: true })
+  triggerTemplate!: TemplateRef<unknown>;
 
   isOpen = false;
 
   toggle(): void {
     if (this.disabled) return;
-    
+
     if (this.isOpen) {
       this.close();
     } else {
@@ -50,7 +64,7 @@ export class DropdownComponent {
 
   open(): void {
     if (this.disabled) return;
-    
+
     this.isOpen = true;
     this.opened.emit();
   }
@@ -68,9 +82,9 @@ export class DropdownComponent {
 
   selectItem(item: DropdownItem): void {
     if (item.disabled) return;
-    
+
     this.itemSelected.emit(item);
-    
+
     if (this.closeOnSelect) {
       this.close();
     }
@@ -109,10 +123,10 @@ export class DropdownComponent {
 
   get triggerClasses(): string {
     const classes = ['ui-dropdown__trigger'];
-    
+
     if (this.disabled) classes.push('ui-dropdown__trigger--disabled');
     if (this.isOpen) classes.push('ui-dropdown__trigger--open');
-    
+
     return classes.join(' ');
   }
 }

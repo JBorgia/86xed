@@ -7,7 +7,7 @@ export type TextareaSize = 'sm' | 'md' | 'lg';
 export type TextareaResize = 'none' | 'vertical' | 'horizontal' | 'both';
 
 @Component({
-  selector: 'x86-textarea',
+  selector: 'u86-textarea',
   standalone: true,
   imports: [CommonModule, CdkTextareaAutosize],
   templateUrl: './textarea.component.html',
@@ -16,9 +16,9 @@ export type TextareaResize = 'none' | 'vertical' | 'horizontal' | 'both';
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => TextareaComponent),
-      multi: true
-    }
-  ]
+      multi: true,
+    },
+  ],
 })
 export class TextareaComponent implements ControlValueAccessor {
   @Input() label?: string;
@@ -39,11 +39,15 @@ export class TextareaComponent implements ControlValueAccessor {
   @Input() name?: string;
 
   value = '';
-  
+
   // ControlValueAccessor methods
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onChange = (_value: string) => { /* Implemented by Angular forms */ };
-  onTouched = () => { /* Implemented by Angular forms */ };
+  onChange = (_value: string) => {
+    /* Implemented by Angular forms */
+  };
+  onTouched = () => {
+    /* Implemented by Angular forms */
+  };
 
   writeValue(value: string): void {
     this.value = value ?? '';
@@ -85,23 +89,24 @@ export class TextareaComponent implements ControlValueAccessor {
 
   get textareaClasses(): string {
     const classes = ['ui-textarea__field'];
-    
+
     classes.push(`ui-textarea__field--${this.size}`);
     classes.push(`ui-textarea__field--resize-${this.resize}`);
-    
-    if (this.error || this.isOverLimit) classes.push('ui-textarea__field--error');
+
+    if (this.error || this.isOverLimit)
+      classes.push('ui-textarea__field--error');
     if (this.disabled) classes.push('ui-textarea__field--disabled');
     if (this.readonly) classes.push('ui-textarea__field--readonly');
-    
+
     return classes.join(' ');
   }
 
   get wrapperClasses(): string {
     const classes = ['ui-textarea'];
-    
+
     if (this.error || this.isOverLimit) classes.push('ui-textarea--error');
     if (this.disabled) classes.push('ui-textarea--disabled');
-    
+
     return classes.join(' ');
   }
 }

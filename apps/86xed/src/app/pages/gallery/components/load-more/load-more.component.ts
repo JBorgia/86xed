@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-load-more',
+  selector: 'x86-load-more',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './load-more.component.html',

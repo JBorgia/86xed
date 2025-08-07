@@ -11,39 +11,43 @@ import {
   OnDestroy,
   computed,
   signal,
-  inject
+  inject,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { FocusMonitor } from '@angular/cdk/a11y';
 
 export type InputVariant = 'default' | 'outline' | 'filled' | 'underline';
 export type InputSize = 'sm' | 'md' | 'lg';
-export type InputType = 'text' | 'email' | 'password' | 'number' | 'search' | 'tel' | 'url';
+export type InputType =
+  | 'text'
+  | 'email'
+  | 'password'
+  | 'number'
+  | 'search'
+  | 'tel'
+  | 'url';
 
 @Component({
-  selector: 'x86-input',
+  selector: 'u86-input',
   standalone: true,
   imports: [CommonModule],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => InputComponent),
-      multi: true
-    }
+      multi: true,
+    },
   ],
   template: `
     <div [class]="containerClasses()">
-      <label 
-        *ngIf="label" 
-        [for]="inputId"
-        [class]="labelClasses()">
+      <label *ngIf="label" [for]="inputId" [class]="labelClasses()">
         {{ label }}
-        <span *ngIf="required" class="x86-input__required">*</span>
+        <span *ngIf="required" class="u86-input__required">*</span>
       </label>
-      
+
       <div [class]="inputWrapperClasses()">
-        <span *ngIf="prefix" class="x86-input__prefix">{{ prefix }}</span>
-        
+        <span *ngIf="prefix" class="u86-input__prefix">{{ prefix }}</span>
+
         <input
           #inputElement
           [id]="inputId"
@@ -64,16 +68,16 @@ export type InputType = 'text' | 'email' | 'password' | 'number' | 'search' | 't
           (focus)="onFocus()"
           (keydown)="onKeyDown()"
         />
-        
-        <span *ngIf="suffix" class="x86-input__suffix">{{ suffix }}</span>
+
+        <span *ngIf="suffix" class="u86-input__suffix">{{ suffix }}</span>
       </div>
-      
+
       <div *ngIf="helperText || errorMessage()" [class]="helperClasses()">
         {{ errorMessage() || helperText }}
       </div>
     </div>
   `,
-  styleUrl: './input.component.scss'
+  styleUrl: './input.component.scss',
 })
 export class InputComponent implements ControlValueAccessor, OnInit, OnDestroy {
   @ViewChild('inputElement') inputElement!: ElementRef<HTMLInputElement>;
@@ -96,7 +100,7 @@ export class InputComponent implements ControlValueAccessor, OnInit, OnDestroy {
   @Input() step?: string | number;
 
   // State inputs
-  @Input() 
+  @Input()
   set disabled(value: boolean) {
     this._disabled.set(value);
   }
@@ -122,43 +126,51 @@ export class InputComponent implements ControlValueAccessor, OnInit, OnDestroy {
   private _error = signal<string | null>(null);
   private _focused = signal(false);
   private _touched = signal(false);
-  
+
   value = signal('');
-  inputId = `x86-input-${Math.random().toString(36).substr(2, 9)}`;
+  inputId = `u86-input-${Math.random().toString(36).substr(2, 9)}`;
 
   // CDK
   private focusMonitor = inject(FocusMonitor);
 
   // Computed classes
-  containerClasses = computed(() => [
-    'x86-input',
-    `x86-input--${this.variant}`,
-    `x86-input--${this.size}`,
-    this._disabled() && 'x86-input--disabled',
-    this._error() && 'x86-input--error',
-    this._focused() && 'x86-input--focused',
-    this.required && 'x86-input--required'
-  ].filter(Boolean).join(' '));
+  containerClasses = computed(() =>
+    [
+      'u86-input',
+      `u86-input--${this.variant}`,
+      `u86-input--${this.size}`,
+      this._disabled() && 'u86-input--disabled',
+      this._error() && 'u86-input--error',
+      this._focused() && 'u86-input--focused',
+      this.required && 'u86-input--required',
+    ]
+      .filter(Boolean)
+      .join(' ')
+  );
 
-  labelClasses = computed(() => [
-    'x86-input__label',
-    this._error() && 'x86-input__label--error'
-  ].filter(Boolean).join(' '));
+  labelClasses = computed(() =>
+    ['u86-input__label', this._error() && 'u86-input__label--error']
+      .filter(Boolean)
+      .join(' ')
+  );
 
-  inputWrapperClasses = computed(() => [
-    'x86-input__wrapper',
-    this.prefix && 'x86-input__wrapper--with-prefix',
-    this.suffix && 'x86-input__wrapper--with-suffix'
-  ].filter(Boolean).join(' '));
+  inputWrapperClasses = computed(() =>
+    [
+      'u86-input__wrapper',
+      this.prefix && 'u86-input__wrapper--with-prefix',
+      this.suffix && 'u86-input__wrapper--with-suffix',
+    ]
+      .filter(Boolean)
+      .join(' ')
+  );
 
-  inputClasses = computed(() => [
-    'x86-input__field'
-  ].join(' '));
+  inputClasses = computed(() => ['u86-input__field'].join(' '));
 
-  helperClasses = computed(() => [
-    'x86-input__helper',
-    this._error() && 'x86-input__helper--error'
-  ].filter(Boolean).join(' '));
+  helperClasses = computed(() =>
+    ['u86-input__helper', this._error() && 'u86-input__helper--error']
+      .filter(Boolean)
+      .join(' ')
+  );
 
   errorMessage = computed(() => this._error());
 
@@ -172,7 +184,7 @@ export class InputComponent implements ControlValueAccessor, OnInit, OnDestroy {
   };
 
   ngOnInit() {
-    this.focusMonitor.monitor(this.inputElement).subscribe(origin => {
+    this.focusMonitor.monitor(this.inputElement).subscribe((origin) => {
       this._focused.set(!!origin);
     });
   }

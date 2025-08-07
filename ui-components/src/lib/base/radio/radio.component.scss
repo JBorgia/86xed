@@ -1,57 +1,57 @@
-.x86-radio {
+.u86-radio {
   border: none;
   padding: 0;
   margin: 0;
-  
+
   &__legend {
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--text);
     margin-bottom: var(--space-3);
-    
-    .x86-radio__required {
+
+    .u86-radio__required {
       color: var(--error);
       margin-left: var(--space-1);
     }
   }
-  
+
   &__options {
     display: flex;
     gap: var(--space-4);
-    
-    .x86-radio--vertical & {
+
+    .u86-radio--vertical & {
       flex-direction: column;
       gap: var(--space-3);
     }
-    
-    .x86-radio--horizontal & {
+
+    .u86-radio--horizontal & {
       flex-direction: row;
       flex-wrap: wrap;
     }
   }
-  
+
   &__option {
     display: flex;
     align-items: center;
     gap: var(--space-3);
     position: relative;
   }
-  
+
   &__input {
     position: absolute;
     opacity: 0;
     cursor: pointer;
-    
-    &:focus + .x86-radio__button {
+
+    &:focus + .u86-radio__button {
       outline: 2px solid var(--primary);
       outline-offset: 2px;
     }
-    
+
     &--disabled {
       cursor: not-allowed;
     }
   }
-  
+
   &__button {
     position: relative;
     display: flex;
@@ -62,51 +62,51 @@
     background: var(--surface);
     transition: all var(--transition-base);
     cursor: pointer;
-    
+
     // Size variants
-    .x86-radio__input--sm + & {
+    .u86-radio__input--sm + & {
       width: 1rem;
       height: 1rem;
     }
-    
-    .x86-radio__input--md + & {
+
+    .u86-radio__input--md + & {
       width: 1.25rem;
       height: 1.25rem;
     }
-    
-    .x86-radio__input--lg + & {
+
+    .u86-radio__input--lg + & {
       width: 1.5rem;
       height: 1.5rem;
     }
-    
+
     // Selected state
-    .x86-radio__input:checked + & {
+    .u86-radio__input:checked + & {
       border-color: var(--primary);
       background: var(--surface);
-      
-      .x86-radio__indicator {
+
+      .u86-radio__indicator {
         opacity: 1;
         transform: scale(1);
       }
     }
-    
+
     // Error state
-    .x86-radio__input--error + & {
+    .u86-radio__input--error + & {
       border-color: var(--error);
-      
+
       &:focus {
         outline-color: var(--error);
       }
     }
-    
+
     // Disabled state
-    .x86-radio__input--disabled + & {
+    .u86-radio__input--disabled + & {
       opacity: 0.5;
       cursor: not-allowed;
       background: var(--surface-disabled);
     }
   }
-  
+
   &__indicator {
     width: 50%;
     height: 50%;
@@ -116,27 +116,27 @@
     transform: scale(0.8);
     transition: all var(--transition-base);
   }
-  
+
   &__label {
     font-size: 0.875rem;
     font-weight: 400;
     color: var(--text);
     cursor: pointer;
     user-select: none;
-    
+
     &--disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
   }
-  
+
   &__hint {
     font-size: 0.75rem;
     color: var(--text-muted);
     line-height: 1.25;
     margin-top: var(--space-2);
   }
-  
+
   &__error {
     font-size: 0.75rem;
     color: var(--error);
@@ -144,16 +144,16 @@
     font-weight: 500;
     margin-top: var(--space-2);
   }
-  
+
   // Component state styles
   &--error {
-    .x86-radio__legend {
+    .u86-radio__legend {
       color: var(--error);
     }
   }
-  
+
   &--disabled {
-    .x86-radio__legend {
+    .u86-radio__legend {
       opacity: 0.5;
     }
   }

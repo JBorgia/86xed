@@ -1,14 +1,14 @@
 <div [class]="wrapperClasses">
   @if (label) {
-    <label class="x86-input__label" [for]="id">
-      {{ label }}
-      @if (required) {
-        <span class="x86-input__required" aria-hidden="true">*</span>
-      }
-    </label>
+  <label class="u86-input__label" [for]="id">
+    {{ label }}
+    @if (required) {
+    <span class="u86-input__required" aria-hidden="true">*</span>
+    }
+  </label>
   }
-  
-  <div class="x86-input__wrapper">
+
+  <div class="u86-input__wrapper">
     <input
       [class]="inputClasses"
       [type]="type"
@@ -20,21 +20,21 @@
       [readonly]="readonly"
       [required]="required"
       [attr.aria-invalid]="error ? 'true' : null"
-      [attr.aria-describedby]="error ? id + '-error' : hint ? id + '-hint' : null"
+      [attr.aria-describedby]="
+        error ? id + '-error' : hint ? id + '-hint' : null
+      "
       (input)="onInput($event)"
       (blur)="onBlur()"
     />
   </div>
-  
+
   @if (hint && !error) {
-    <div class="x86-input__hint" [id]="id + '-hint'">
-      {{ hint }}
-    </div>
-  }
-  
-  @if (error) {
-    <div class="x86-input__error" [id]="id + '-error'" role="alert">
-      {{ error }}
-    </div>
+  <div class="u86-input__hint" [id]="id + '-hint'">
+    {{ hint }}
+  </div>
+  } @if (error) {
+  <div class="u86-input__error" [id]="id + '-error'" role="alert">
+    {{ error }}
+  </div>
   }
 </div>

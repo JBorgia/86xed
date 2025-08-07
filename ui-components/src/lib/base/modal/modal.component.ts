@@ -1,15 +1,23 @@
-import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  ViewChild,
+  ElementRef,
+  AfterViewInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { A11yModule } from '@angular/cdk/a11y';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
 
 @Component({
-  selector: 'x86-modal',
+  selector: 'u86-modal',
   standalone: true,
   imports: [CommonModule, A11yModule],
   templateUrl: './modal.component.html',
-  styleUrl: './modal.component.scss'
+  styleUrl: './modal.component.scss',
 })
 export class ModalComponent implements AfterViewInit {
   @Input() isOpen = false;
@@ -19,7 +27,7 @@ export class ModalComponent implements AfterViewInit {
   @Input() closeOnOverlayClick = true;
   @Input() closeOnEscape = true;
   @Input() preventBodyScroll = true;
-  
+
   @Output() isOpenChange = new EventEmitter<boolean>();
   @Output() closed = new EventEmitter<void>();
   @Output() opened = new EventEmitter<void>();
@@ -65,7 +73,10 @@ export class ModalComponent implements AfterViewInit {
   }
 
   onOverlayKeydown(event: KeyboardEvent): void {
-    if ((event.key === 'Enter' || event.key === ' ') && event.target === event.currentTarget) {
+    if (
+      (event.key === 'Enter' || event.key === ' ') &&
+      event.target === event.currentTarget
+    ) {
       if (this.closeOnOverlayClick) {
         this.close();
       }
@@ -79,8 +90,8 @@ export class ModalComponent implements AfterViewInit {
   }
 
   get modalClasses(): string {
-    const classes = ['x86-modal__content'];
-    classes.push(`x86-modal__content--${this.size}`);
+    const classes = ['u86-modal__content'];
+    classes.push(`u86-modal__content--${this.size}`);
     return classes.join(' ');
   }
 }

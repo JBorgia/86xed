@@ -1,30 +1,30 @@
-.x86-checkbox {
+.u86-checkbox {
   display: flex;
   flex-direction: column;
   gap: var(--space-2, 0.5rem);
-  
+
   &__wrapper {
     display: flex;
     align-items: center;
     gap: var(--space-3);
     position: relative;
   }
-  
+
   &__input {
     position: absolute;
     opacity: 0;
     cursor: pointer;
-    
-    &:focus + .x86-checkbox__checkmark {
+
+    &:focus + .u86-checkbox__checkmark {
       outline: 2px solid var(--primary);
       outline-offset: 2px;
     }
-    
+
     &--disabled {
       cursor: not-allowed;
     }
   }
-  
+
   &__checkmark {
     position: relative;
     display: flex;
@@ -35,54 +35,54 @@
     background: var(--surface);
     transition: all var(--transition-base);
     cursor: pointer;
-    
+
     // Size variants
-    .x86-checkbox__input--sm + & {
+    .u86-checkbox__input--sm + & {
       width: 1rem;
       height: 1rem;
     }
-    
-    .x86-checkbox__input--md + & {
+
+    .u86-checkbox__input--md + & {
       width: 1.25rem;
       height: 1.25rem;
     }
-    
-    .x86-checkbox__input--lg + & {
+
+    .u86-checkbox__input--lg + & {
       width: 1.5rem;
       height: 1.5rem;
     }
-    
+
     // Checked state
-    .x86-checkbox__input:checked + & {
+    .u86-checkbox__input:checked + & {
       background: var(--primary);
       border-color: var(--primary);
       color: white;
     }
-    
+
     // Indeterminate state
     &--indeterminate {
       background: var(--primary);
       border-color: var(--primary);
       color: white;
     }
-    
+
     // Error state
-    .x86-checkbox__input--error + & {
+    .u86-checkbox__input--error + & {
       border-color: var(--error);
-      
+
       &:focus {
         outline-color: var(--error);
       }
     }
-    
+
     // Disabled state
-    .x86-checkbox__input--disabled + & {
+    .u86-checkbox__input--disabled + & {
       opacity: 0.5;
       cursor: not-allowed;
       background: var(--surface-disabled);
     }
   }
-  
+
   &__check-icon,
   &__indeterminate-icon {
     width: 70%;
@@ -90,34 +90,34 @@
     opacity: 0;
     transform: scale(0.8);
     transition: all var(--transition-base);
-    
-    .x86-checkbox__input:checked + .x86-checkbox__checkmark &,
-    .x86-checkbox__checkmark--indeterminate & {
+
+    .u86-checkbox__input:checked + .u86-checkbox__checkmark &,
+    .u86-checkbox__checkmark--indeterminate & {
       opacity: 1;
       transform: scale(1);
     }
   }
-  
+
   &__label {
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--text);
     cursor: pointer;
     user-select: none;
-    
-    .x86-checkbox__required {
+
+    .u86-checkbox__required {
       color: var(--error);
       margin-left: var(--space-1);
     }
   }
-  
+
   &__hint {
     font-size: 0.75rem;
     color: var(--text-muted);
     line-height: 1.25;
     margin-left: calc(1.25rem + var(--space-3)); // Align with label
   }
-  
+
   &__error {
     font-size: 0.75rem;
     color: var(--error);
@@ -125,16 +125,16 @@
     font-weight: 500;
     margin-left: calc(1.25rem + var(--space-3)); // Align with label
   }
-  
+
   // Component state styles
   &--error {
-    .x86-checkbox__label {
+    .u86-checkbox__label {
       color: var(--error);
     }
   }
-  
+
   &--disabled {
-    .x86-checkbox__label {
+    .u86-checkbox__label {
       opacity: 0.5;
       cursor: not-allowed;
     }

@@ -12,7 +12,7 @@ export default [
         'error',
         {
           type: 'attribute',
-          prefix: 'x86',
+          prefix: 'u86',
           style: 'camelCase',
         },
       ],
@@ -20,7 +20,7 @@ export default [
         'error',
         {
           type: 'element',
-          prefix: 'x86',
+          prefix: 'u86',
           style: 'kebab-case',
         },
       ],

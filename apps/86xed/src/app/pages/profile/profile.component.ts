@@ -21,7 +21,7 @@ interface MockEarnings {
 }
 
 @Component({
-  selector: 'app-profile',
+  selector: 'x86-profile',
   standalone: true,
   imports: [CommonModule, RouterLink, ButtonComponent],
   templateUrl: './profile.component.html',

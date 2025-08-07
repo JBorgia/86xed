@@ -46,7 +46,7 @@ export class SocialDistributionService {
     { name: 'twitter', enabled: true },
     { name: 'instagram', enabled: true },
     { name: 'tiktok', enabled: true },
-    { name: 'facebook', enabled: false },
+    { name: 'tilebook', enabled: false },
     { name: 'reddit', enabled: true },
     { name: 'discord', enabled: true },
   ];
@@ -113,7 +113,7 @@ export class SocialDistributionService {
         return this.shareToReddit(grid, shareContent);
       case 'discord':
         return this.shareToDiscord(grid, shareContent);
-      case 'facebook':
+      case 'tilebook':
         return this.shareToFacebook(grid, shareContent);
       default:
         throw new Error(`Unsupported platform: ${platform}`);
@@ -154,7 +154,7 @@ export class SocialDistributionService {
     const tweetData = {
       text: content,
       media: {
-        media_ids: [await this.uploadMediaToTwitter(grid.faces[0]?.imageUrl)],
+        media_ids: [await this.uploadMediaToTwitter(grid.tiles[0]?.imageUrl)],
       },
     };
 
@@ -179,7 +179,7 @@ export class SocialDistributionService {
     // In production, integrate with Instagram Basic Display API
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const postData = {
-      image_url: grid.faces[0]?.imageUrl,
+      image_url: grid.tiles[0]?.imageUrl,
       caption: content,
       access_token: 'INSTAGRAM_ACCESS_TOKEN',
     };
@@ -238,7 +238,7 @@ export class SocialDistributionService {
       sr: bestSubreddit,
       kind: 'image',
       title: content,
-      url: grid.faces[0]?.imageUrl,
+      url: grid.tiles[0]?.imageUrl,
     };
 
     const mockResponse = {
@@ -264,7 +264,7 @@ export class SocialDistributionService {
     const embed = {
       title: grid.title,
       description: content,
-      image: { url: grid.faces[0]?.imageUrl },
+      image: { url: grid.tiles[0]?.imageUrl },
       color: 0x86ed, // 86xed brand color
       footer: { text: '86xed - Viral Bingo Creator' },
     };
@@ -360,7 +360,7 @@ export class SocialDistributionService {
         return 'Thought you all might appreciate this one';
       case 'discord':
         return '🎮 Anyone else relate to this or just me?';
-      case 'facebook':
+      case 'tilebook':
         return 'Sharing some fun content for the community!';
       default:
         return '';

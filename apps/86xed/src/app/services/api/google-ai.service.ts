@@ -68,7 +68,7 @@ export class GoogleAIService {
   /**
    * Detect celebrities and enhance tile data with AI
    */
-  async detectCelebrities(tiles: Partial<Tile>[]): Promise<Tile[]> {
+  async detectCelebrities(tiles: Partial<tile>[]): Promise<tile[]> {
     const enhancedTiles: tile[] = [];
 
     for (const tile of tiles) {

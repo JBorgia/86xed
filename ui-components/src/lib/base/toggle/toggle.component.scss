@@ -1,14 +1,14 @@
-.x86-toggle {
+.u86-toggle {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  
+
   &__wrapper {
     display: flex;
     align-items: center;
     gap: var(--space-3);
   }
-  
+
   &__switch {
     position: relative;
     border: none;
@@ -16,45 +16,45 @@
     background: var(--border);
     cursor: pointer;
     transition: all var(--transition-base);
-    
+
     &:focus {
       outline: 2px solid var(--primary);
       outline-offset: 2px;
     }
-    
+
     // Size variants
     &--sm {
       width: 2rem;
       height: 1rem;
       padding: 0.125rem;
     }
-    
+
     &--md {
       width: 2.5rem;
       height: 1.25rem;
       padding: 0.125rem;
     }
-    
+
     &--lg {
       width: 3rem;
       height: 1.5rem;
       padding: 0.1875rem;
     }
-    
+
     // Checked state
     &--checked {
       background: var(--primary);
     }
-    
+
     // Error state
     &--error {
       background: var(--error);
-      
+
       &:focus {
         outline-color: var(--error);
       }
     }
-    
+
     // Disabled state
     &--disabled {
       opacity: 0.5;
@@ -62,71 +62,71 @@
       background: var(--surface-disabled);
     }
   }
-  
+
   &__thumb {
     display: block;
     background: white;
     border-radius: 50%;
     transition: all var(--transition-base);
     transform: translateX(0);
-    
+
     // Size variants
-    .x86-toggle__switch--sm & {
+    .u86-toggle__switch--sm & {
       width: 0.75rem;
       height: 0.75rem;
     }
-    
-    .x86-toggle__switch--md & {
+
+    .u86-toggle__switch--md & {
       width: 1rem;
       height: 1rem;
     }
-    
-    .x86-toggle__switch--lg & {
+
+    .u86-toggle__switch--lg & {
       width: 1.125rem;
       height: 1.125rem;
     }
-    
+
     // Checked state
     &--checked {
-      .x86-toggle__switch--sm & {
+      .u86-toggle__switch--sm & {
         transform: translateX(1rem);
       }
-      
-      .x86-toggle__switch--md & {
+
+      .u86-toggle__switch--md & {
         transform: translateX(1.25rem);
       }
-      
-      .x86-toggle__switch--lg & {
+
+      .u86-toggle__switch--lg & {
         transform: translateX(1.3125rem);
       }
     }
   }
-  
+
   &__label {
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--text);
     cursor: pointer;
     user-select: none;
-    
-    .x86-toggle__required {
+
+    .u86-toggle__required {
       color: var(--error);
       margin-left: var(--space-1);
     }
-    
+
     &--disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
   }
-  
+
   &__hint {
     font-size: 0.75rem;
     color: var(--text-muted);
     line-height: 1.25;
     margin-left: calc(2.5rem + var(--space-3)); // Align with label
   }
-  
+
   &__error {
     font-size: 0.75rem;
     color: var(--error);
@@ -134,16 +134,16 @@
     font-weight: 500;
     margin-left: calc(2.5rem + var(--space-3)); // Align with label
   }
-  
+
   // Component state styles
   &--error {
-    .x86-toggle__label {
+    .u86-toggle__label {
       color: var(--error);
     }
   }
-  
+
   &--disabled {
-    .x86-toggle__label {
+    .u86-toggle__label {
       opacity: 0.5;
       cursor: not-allowed;
     }

@@ -43,7 +43,7 @@ export interface BingoGrid {
 export interface GridInput {
   title: string;
   description: string;
-  tiles: Partial<Face>[];
+  tiles: Partial<tile>[];
   theme: string;
   tags: string[];
 }

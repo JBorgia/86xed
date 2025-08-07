@@ -22,7 +22,7 @@ interface SocialProvider {
 }
 
 @Component({
-  selector: 'app-login',
+  selector: 'x86-login',
   standalone: true,
   imports: [CommonModule, RouterLink, ReactiveFormsModule],
   templateUrl: './login.component.html',

@@ -12,7 +12,7 @@ export type RadioSize = 'sm' | 'md' | 'lg';
 export type RadioDirection = 'vertical' | 'horizontal';
 
 @Component({
-  selector: 'x86-radio',
+  selector: 'u86-radio',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './radio.component.html',
@@ -21,9 +21,9 @@ export type RadioDirection = 'vertical' | 'horizontal';
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => RadioComponent),
-      multi: true
-    }
-  ]
+      multi: true,
+    },
+  ],
 })
 export class RadioComponent implements ControlValueAccessor {
   @Input() label?: string;
@@ -37,11 +37,15 @@ export class RadioComponent implements ControlValueAccessor {
   @Input() name?: string;
 
   private _value: string | number | null = null;
-  
+
   // ControlValueAccessor methods
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onChange = (_value: string | number | null) => { /* Implemented by Angular forms */ };
-  onTouched = () => { /* Implemented by Angular forms */ };
+  onChange = (_value: string | number | null) => {
+    /* Implemented by Angular forms */
+  };
+  onTouched = () => {
+    /* Implemented by Angular forms */
+  };
 
   get value(): string | number | null {
     return this._value;
@@ -65,7 +69,7 @@ export class RadioComponent implements ControlValueAccessor {
 
   selectOption(option: RadioOption): void {
     if (option.disabled || this.disabled) return;
-    
+
     this._value = option.value;
     this.onChange(option.value);
     this.onTouched();
@@ -77,23 +81,24 @@ export class RadioComponent implements ControlValueAccessor {
 
   getRadioClasses(option: RadioOption): string {
     const classes = ['ui-radio__input'];
-    
+
     classes.push(`ui-radio__input--${this.size}`);
-    
+
     if (this.error) classes.push('ui-radio__input--error');
-    if (this.disabled || option.disabled) classes.push('ui-radio__input--disabled');
-    
+    if (this.disabled || option.disabled)
+      classes.push('ui-radio__input--disabled');
+
     return classes.join(' ');
   }
 
   get wrapperClasses(): string {
     const classes = ['ui-radio'];
-    
+
     classes.push(`ui-radio--${this.direction}`);
-    
+
     if (this.error) classes.push('ui-radio--error');
     if (this.disabled) classes.push('ui-radio--disabled');
-    
+
     return classes.join(' ');
   }
 }

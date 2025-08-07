@@ -1,43 +1,44 @@
 @if (isOpen) {
-  <div class="x86-modal__overlay" 
-       (click)="onOverlayClick($event)"
-       (keydown)="onOverlayKeydown($event)"
-       tabindex="0"
-       role="button"
-       [attr.aria-label]="'Close modal'"
-       cdkTrapFocus
-       [cdkTrapFocusAutoCapture]="true">
-    
-    <div [class]="modalClasses" 
-         #modalContent
-         role="dialog"
-         [attr.aria-modal]="true"
-         [attr.aria-labelledby]="title ? 'modal-title' : null"
-         (keydown.escape)="onEscapeKey()">
-      
-      @if (title || showCloseButton) {
-        <header class="x86-modal__header">
-          @if (title) {
-            <h2 id="modal-title" class="x86-modal__title">{{ title }}</h2>
-          }
-          
-          @if (showCloseButton) {
-            <button 
-              type="button"
-              class="x86-modal__close-button"
-              aria-label="Close modal"
-              (click)="close()">
-              ✕
-            </button>
-          }
-        </header>
+<div
+  class="u86-modal__overlay"
+  (click)="onOverlayClick($event)"
+  (keydown)="onOverlayKeydown($event)"
+  tabindex="0"
+  role="button"
+  [attr.aria-label]="'Close modal'"
+  cdkTrapFocus
+  [cdkTrapFocusAutoCapture]="true"
+>
+  <div
+    [class]="modalClasses"
+    #modalContent
+    role="dialog"
+    [attr.aria-modal]="true"
+    [attr.aria-labelledby]="title ? 'modal-title' : null"
+    (keydown.escape)="onEscapeKey()"
+  >
+    @if (title || showCloseButton) {
+    <header class="u86-modal__header">
+      @if (title) {
+      <h2 id="modal-title" class="u86-modal__title">{{ title }}</h2>
+      } @if (showCloseButton) {
+      <button
+        type="button"
+        class="u86-modal__close-button"
+        aria-label="Close modal"
+        (click)="close()"
+      >
+        ✕
+      </button>
       }
-      
-      <div class="x86-modal__body">
-        <ng-content></ng-content>
-      </div>
-      
-      <ng-content select="[slot=footer]"></ng-content>
+    </header>
+    }
+
+    <div class="u86-modal__body">
+      <ng-content></ng-content>
     </div>
+
+    <ng-content select="[slot=footer]"></ng-content>
   </div>
+</div>
 }

@@ -2,11 +2,10 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-social-feed',
+  selector: 'x86-social-feed',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './social-feed.component.html',
-  styleUrl: './social-feed.component.scss'
+  styleUrl: './social-feed.component.scss',
 })
-export class SocialFeedComponent {
-}
+export class SocialFeedComponent {}

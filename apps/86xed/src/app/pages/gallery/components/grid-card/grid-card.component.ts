@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { BingoGrid, tile } from '../../../../types';
 
 @Component({
-  selector: 'app-grid-card',
+  selector: 'x86-grid-card',
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './grid-card.component.html',

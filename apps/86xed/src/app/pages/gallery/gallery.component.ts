@@ -18,7 +18,7 @@ import { GridCardComponent } from './components/grid-card/grid-card.component';
 import { LoadMoreComponent } from './components/load-more/load-more.component';
 
 @Component({
-  selector: 'app-gallery',
+  selector: 'x86-gallery',
   standalone: true,
   imports: [
     CommonModule,

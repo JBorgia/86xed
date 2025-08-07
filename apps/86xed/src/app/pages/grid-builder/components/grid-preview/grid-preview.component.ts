@@ -46,7 +46,7 @@ export class GridPreviewComponent {
     );
   }
 
-  getGridPreview(): (Tile | null)[] {
+  getGridPreview(): (tile | null)[] {
     const grid = new Array(25).fill(null);
     // Fill with selected tiles (skip center cell at index 12)
     let tileIndex = 0;

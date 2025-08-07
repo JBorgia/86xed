@@ -24,7 +24,7 @@ interface SocialProvider {
 }
 
 @Component({
-  selector: 'app-register',
+  selector: 'x86-register',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './register.component.html',
