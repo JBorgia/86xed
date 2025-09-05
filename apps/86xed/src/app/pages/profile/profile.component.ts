@@ -1,18 +1,16 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-
-// UI Components
 import { ButtonComponent } from '@86xed/ui-components';
+import { CommonModule } from '@angular/common';
+import { Component, computed, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { RouterLink } from '@angular/router';
 
-// Core Services
-import {
-  SupabaseService,
-  SupabaseUser,
-} from '../../services/api/supabase.service';
+import { SupabaseService, SupabaseUser } from '../../services/api/supabase.service';
+import { profileSelectors, setCurrentFilter, setGridsLoading, setUserGrids } from '../../store/profile.store';
+import { setUser, userSelectors } from '../../store/user.store';
 import { BingoGrid } from '../../types';
 
+// UI Components
+// Core Services
 interface MockEarnings {
   total: number;
   thisMonth: number;
@@ -30,29 +28,24 @@ interface MockEarnings {
 export class ProfileComponent implements OnInit {
   private supabaseService = inject(SupabaseService);
 
-  // Component state using modern signals
-  user = signal<SupabaseUser | null>(null);
-  userGrids = signal<BingoGrid[]>([]);
-  gridsLoading = signal(true);
-  currentFilter = signal<'all' | 'viral' | 'monetized'>('all');
+  // Access SignalTree stores directly
+  readonly user = userSelectors.user;
+  readonly userGrids = profileSelectors.userGrids;
+  readonly gridsLoading = profileSelectors.gridsLoading;
+  readonly currentFilter = profileSelectors.currentFilter;
 
-  // Computed values using modern computed signals
-  filteredGrids = computed(() => {
-    const filter = this.currentFilter();
-    const allGrids = this.userGrids();
-
-    switch (filter) {
-      case 'viral':
-        return allGrids.filter((grid) => grid.viralScore >= 0.8);
-      case 'monetized':
-        return allGrids.filter((grid) => grid.status === 'monetized');
-      default:
-        return allGrids;
-    }
-  });
+  // Computed properties from store
+  readonly filteredGrids = computed(() => profileSelectors.filteredGrids());
+  readonly totalShares = computed(() => profileSelectors.totalShares());
+  readonly viralGridsCount = computed(() => profileSelectors.viralGridsCount());
+  readonly monetizedGrids = computed(() => profileSelectors.monetizedGrids());
+  readonly averageViralScore = computed(() =>
+    profileSelectors.averageViralScore()
+  );
+  readonly topViralGrids = computed(() => profileSelectors.topViralGrids());
 
   // Mock data for development - will be replaced with real API calls
-  private mockEarningsData = signal<MockEarnings>({
+  private mockEarningsData: MockEarnings = {
     total: 1234,
     thisMonth: 89,
     lastMonth: 156,
@@ -62,7 +55,7 @@ export class ProfileComponent implements OnInit {
       '3': 23,
       '4': 12,
     },
-  });
+  };
 
   readonly Math = Math;
 
@@ -73,7 +66,7 @@ export class ProfileComponent implements OnInit {
   private loadUserData(): void {
     // Use takeUntilDestroyed for automatic cleanup
     this.supabaseService.user$.pipe(takeUntilDestroyed()).subscribe((user) => {
-      this.user.set(user);
+      setUser(user);
       if (user) {
         this.loadUserGrids(user.id);
       } else {
@@ -84,19 +77,19 @@ export class ProfileComponent implements OnInit {
   }
 
   private loadUserGrids(userId: string): void {
-    this.gridsLoading.set(true);
+    setGridsLoading(true);
 
     this.supabaseService
       .getUserGrids(userId)
       .pipe(takeUntilDestroyed())
       .subscribe({
         next: (grids) => {
-          this.userGrids.set(grids);
-          this.gridsLoading.set(false);
+          setUserGrids(grids);
+          setGridsLoading(false);
         },
         error: (error) => {
           console.error('Failed to load user grids:', error);
-          this.gridsLoading.set(false);
+          setGridsLoading(false);
           // Fallback to mock data for development
           this.loadMockUserGrids();
         },
@@ -105,7 +98,7 @@ export class ProfileComponent implements OnInit {
 
   private loadDemoData(): void {
     // For demo purposes, show sample user
-    this.user.set({
+    setUser({
       id: 'demo-user',
       email: 'demo@86xed.com',
       username: 'demo_creator',
@@ -116,7 +109,7 @@ export class ProfileComponent implements OnInit {
         notifications: true,
         privacy: 'public',
       },
-    });
+    } as SupabaseUser);
     this.loadMockUserGrids();
   }
 
@@ -225,51 +218,46 @@ export class ProfileComponent implements OnInit {
       },
     ];
 
-    this.userGrids.set(mockGrids);
-    this.gridsLoading.set(false);
+    setUserGrids(mockGrids);
+    setGridsLoading(false);
   }
 
   // Helper methods with enhanced functionality
   setFilter(filter: 'all' | 'viral' | 'monetized'): void {
-    this.currentFilter.set(filter);
+    setCurrentFilter(filter);
   }
 
   getInitials(username: string): string {
     return username.substring(0, 2).toUpperCase();
   }
 
+  // Legacy getter methods - now replaced by computed signals above
+  // Keeping for backward compatibility if needed
   getTotalShares(): number {
-    return this.userGrids().reduce(
-      (total, grid) => total + grid.socialMetrics.shares,
-      0
-    );
+    return this.totalShares();
   }
 
   getViralGridsCount(): number {
-    return this.userGrids().filter((grid) => grid.viralScore >= 0.8).length;
+    return this.viralGridsCount();
   }
 
   getMonetizedGrids(): BingoGrid[] {
-    return this.userGrids().filter((grid) => grid.status === 'monetized');
+    return this.monetizedGrids();
   }
 
   getAverageViralScore(): number {
-    const grids = this.userGrids();
-    if (grids.length === 0) return 0;
-    return grids.reduce((sum, grid) => sum + grid.viralScore, 0) / grids.length;
+    return this.averageViralScore();
   }
 
   getTopViralGrids(): BingoGrid[] {
-    return [...this.userGrids()]
-      .sort((a, b) => b.viralScore - a.viralScore)
-      .slice(0, 5);
+    return this.topViralGrids();
   }
 
   // Mock earnings data - replace with real API calls
-  mockEarnings = computed(() => this.mockEarningsData());
+  mockEarnings = this.mockEarningsData;
 
   getMockEarningsForGrid(gridId: string): number {
-    return this.mockEarningsData().gridEarnings[gridId] || 0;
+    return this.mockEarningsData.gridEarnings[gridId] || 0;
   }
 
   getRecentActivity(): Array<{ icon: string; text: string; time: string }> {
@@ -331,10 +319,10 @@ export class ProfileComponent implements OnInit {
       // Future: Call orchestration service to create Shopify products
 
       // Mock success for now
-      const updatedGrids = this.userGrids().map((grid) =>
+      const updatedGrids = this.userGrids().map((grid: BingoGrid) =>
         grid.id === gridId ? { ...grid, status: 'monetized' as const } : grid
       );
-      this.userGrids.set(updatedGrids);
+      setUserGrids(updatedGrids);
     } catch (error) {
       console.error('Failed to monetize grid:', error);
       // Future: Show error toast/notification

@@ -1,4 +1,4 @@
-@if (isOpen) {
+@if (isOpen()) {
 <div
   class="u86-modal__overlay"
   (click)="onOverlayClick($event)"
@@ -14,14 +14,14 @@
     #modalContent
     role="dialog"
     [attr.aria-modal]="true"
-    [attr.aria-labelledby]="title ? 'modal-title' : null"
+    [attr.aria-labelledby]="title() ? 'modal-title' : null"
     (keydown.escape)="onEscapeKey()"
   >
-    @if (title || showCloseButton) {
+    @if (title() || showCloseButton()) {
     <header class="u86-modal__header">
-      @if (title) {
-      <h2 id="modal-title" class="u86-modal__title">{{ title }}</h2>
-      } @if (showCloseButton) {
+      @if (title()) {
+      <h2 id="modal-title" class="u86-modal__title">{{ title() }}</h2>
+      } @if (showCloseButton()) {
       <button
         type="button"
         class="u86-modal__close-button"

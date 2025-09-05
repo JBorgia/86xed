@@ -1,37 +1,41 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 
-// Services and Types
+import { SupabaseService } from '../../services/api/supabase.service';
 import { OrchestrationService } from '../../services/root/orchestration.service';
 import { RealtimeService } from '../../services/root/realtime.service';
-import { SupabaseService } from '../../services/api/supabase.service';
-import { BingoGrid, tile } from '../../types';
-
-// Sub-components
-import { TileSelectionComponent } from './components/tile-selection/tile-selection.component';
 import {
-  CategorySelectionComponent,
-  Category,
-} from './components/category-selection/category-selection.component';
+  gridSelectors,
+  resetBuilderState,
+  setAISuggestions,
+  setAvailableTiles,
+  setCategory,
+  setDescription,
+  setGenerationProgress,
+  setIsGenerating,
+  setIsPublic,
+  setSelectedTiles,
+  setStep,
+  setTheme,
+  setTitle,
+} from '../../store/grid-builder.store';
+import { BingoGrid, Tile } from '../../types';
+import { CategorySelectionComponent } from './components/category-selection/category-selection.component';
 import {
   GridCustomizationComponent,
   GridCustomizationData,
 } from './components/grid-customization/grid-customization.component';
-import {
-  GridPreviewComponent,
-  GridPreviewData,
-} from './components/grid-preview/grid-preview.component';
-import {
-  PublishingComponent,
-  PublishingData,
-} from './components/publishing/publishing.component';
+import { GridPreviewComponent, GridPreviewData } from './components/grid-preview/grid-preview.component';
+import { PublishingComponent, PublishingData } from './components/publishing/publishing.component';
+import { TileSelectionComponent } from './components/tile-selection/tile-selection.component';
 
+// Services and Types
+// Sub-components
 export interface GridBuilderState {
   currentGrid: Partial<BingoGrid> | null;
-  tiles: tile[];
-  selectedTiles: tile[];
+  tiles: Tile[];
   selectedCategory: string;
   selectedTheme: string;
   isGenerating: boolean;
@@ -41,7 +45,6 @@ export interface GridBuilderState {
     | 'customization'
     | 'preview'
     | 'publishing';
-  aiSuggestions: tile[];
   title: string;
   description: string;
   isPublic: boolean;
@@ -68,25 +71,28 @@ export class GridBuilderComponent implements OnInit {
   private orchestration = inject(OrchestrationService);
   private realtime = inject(RealtimeService);
   private supabase = inject(SupabaseService);
+  // direct store usage via gridSelectors and store helpers
 
-  // Component State
-  state = signal<GridBuilderState>({
-    currentGrid: null,
-    tiles: [],
-    selectedTiles: [],
-    selectedCategory: '',
-    selectedTheme: '86xed-dark',
-    isGenerating: false,
-    currentStep: 'category',
-    aiSuggestions: [],
-    title: '',
-    description: '',
-    isPublic: false,
-    generationProgress: 0,
-  });
+  // expose selectors to template
+  readonly gridSelectors = gridSelectors;
 
-  // Template-required signals
-  categories = signal([
+  // Computed wrappers around store selectors to use in templates
+  readonly title$ = computed(() => gridSelectors.title());
+  readonly description$ = computed(() => gridSelectors.description());
+  readonly selectedTiles$ = computed(() => gridSelectors.selectedTiles());
+  readonly aiSuggestions$ = computed(() => gridSelectors.aiSuggestions());
+  readonly selectedCategory$ = computed(() => gridSelectors.selectedCategory());
+  readonly selectedTheme$ = computed(() => gridSelectors.selectedTheme());
+  readonly isPublic$ = computed(() => gridSelectors.isPublic());
+  readonly isGenerating$ = computed(() => gridSelectors.isGenerating());
+  readonly generationProgress$ = computed(() =>
+    gridSelectors.generationProgress()
+  );
+
+  // Component State is served by the grid store; keep only UI helpers locally
+
+  // Template-required constants / UI-only signals
+  categories = [
     {
       id: 'celebrities',
       name: 'Celebrities',
@@ -117,47 +123,44 @@ export class GridBuilderComponent implements OnInit {
       description: 'Movie and TV stars',
       icon: '🎬',
     },
-  ]);
+  ];
 
-  searchTiles = signal('');
-  availableTiles = signal<tile[]>([]);
+  searchTiles = '';
+  // Available tiles are managed in the global store
 
-  // Step management
-  currentStepIndex = signal(0);
-  progressPercentage = signal(0);
+  // Step management (UI-only)
+  currentStepIndex = 0;
+  progressPercentage = 0;
 
   // Computed properties for child components
   get gridCustomizationData(): GridCustomizationData {
     return {
-      title: this.state().title,
-      description: this.state().description,
-      isPublic: this.state().isPublic,
+      title: this.title$(),
+      description: this.description$(),
+      isPublic: this.isPublic$(),
     };
   }
 
   get gridPreviewData(): GridPreviewData {
     return {
-      title: this.state().title,
-      description: this.state().description,
-      selectedCategory: this.state().selectedCategory,
-      selectedTiles: this.state().selectedTiles,
-      isPublic: this.state().isPublic,
-      isGenerating: this.state().isGenerating,
+      title: this.title$(),
+      description: this.description$(),
+      selectedCategory: this.selectedCategory$(),
+      selectedTiles: this.selectedTiles$(),
+      isPublic: this.isPublic$(),
+      isGenerating: this.isGenerating$(),
     };
   }
 
   get publishingData(): PublishingData {
     return {
-      isGenerating: this.state().isGenerating,
-      generationProgress: this.state().generationProgress,
+      isGenerating: this.isGenerating$(),
+      generationProgress: this.generationProgress$(),
       generationStage: this.getGenerationStage(),
-      isComplete:
-        !this.state().isGenerating && this.state().generationProgress === 100,
+      isComplete: !this.isGenerating$() && this.generationProgress$() === 100,
       isError: false,
       generatedGridId:
-        this.state().generationProgress === 100
-          ? 'generated-grid-id'
-          : undefined,
+        this.generationProgress$() === 100 ? 'generated-grid-id' : undefined,
     };
   }
 
@@ -174,7 +177,8 @@ export class GridBuilderComponent implements OnInit {
       preview: 'Preview & Review',
       publishing: 'Creating Your Grid',
     };
-    return titles[this.state().currentStep] || '';
+    const key = this.gridSelectors.step() as keyof typeof titles;
+    return titles[key] || '';
   }
 
   getStepDescription(): string {
@@ -185,11 +189,12 @@ export class GridBuilderComponent implements OnInit {
       preview: 'Review your grid before creating',
       publishing: 'Generating your viral bingo grid...',
     };
-    return descriptions[this.state().currentStep] || '';
+    const key = this.gridSelectors.step() as keyof typeof descriptions;
+    return descriptions[key] || '';
   }
 
   getGenerationStage(): string {
-    const progress = this.state().generationProgress;
+    const progress = this.generationProgress$();
     if (progress < 25) return 'Preparing grid layout...';
     if (progress < 50) return 'Shuffling tile positions...';
     if (progress < 75) return 'Generating bingo grid...';
@@ -198,91 +203,73 @@ export class GridBuilderComponent implements OnInit {
   }
 
   selectCategory(categoryId: string): void {
-    this.state.update((state) => ({
-      ...state,
-      selectedCategory: categoryId,
-      tiles: [],
-      selectedTiles: [],
-    }));
+    setCategory(categoryId);
     this.loadTilesForCategory(categoryId);
   }
 
-  goToStepString(step: string): void {
-    this.state.update((state) => ({
-      ...state,
-      currentStep: step as any,
-    }));
+  goToStepString(step: GridBuilderState['currentStep']): void {
+    // update store step and refresh UI progress
+    setStep(step);
     this.updateProgress();
   }
 
+  // Template-friendly wrapper (templates can't use TS union assertions)
+  goToStepUnsafe(step: string): void {
+    this.goToStepString(step as GridBuilderState['currentStep']);
+  }
+
   nextStep(): void {
-    const steps = [
+    const steps: GridBuilderState['currentStep'][] = [
       'category',
       'tiles',
       'customization',
       'preview',
       'publishing',
     ];
-    const currentIndex = steps.indexOf(this.state().currentStep);
+    const currentIndex = steps.indexOf(gridSelectors.step());
     if (currentIndex < steps.length - 1) {
-      this.state.update((state) => ({
-        ...state,
-        currentStep: steps[currentIndex + 1] as any,
-      }));
+      // advance UI progress
       this.updateProgress();
     }
   }
 
   previousStep(): void {
-    const steps = [
+    const steps: GridBuilderState['currentStep'][] = [
       'category',
       'tiles',
       'customization',
       'preview',
       'publishing',
     ];
-    const currentIndex = steps.indexOf(this.state().currentStep);
+    const currentIndex = steps.indexOf(gridSelectors.step());
     if (currentIndex > 0) {
-      this.state.update((state) => ({
-        ...state,
-        currentStep: steps[currentIndex - 1] as any,
-      }));
       this.updateProgress();
     }
   }
 
   canProceedToNext(): boolean {
-    switch (this.state().currentStep) {
+    switch (gridSelectors.step()) {
       case 'category':
-        return !!this.state().selectedCategory;
+        return !!gridSelectors.selectedCategory();
       case 'tiles':
-        return this.state().selectedTiles.length > 0;
+        return gridSelectors.selectedTiles().length > 0;
       case 'customization':
-        return !!this.state().title.trim();
+        return !!gridSelectors.title().trim();
       default:
         return true;
     }
   }
 
   updateGridTitle(title: string): void {
-    this.state.update((state) => ({
-      ...state,
-      title: title,
-    }));
+    setTitle(title);
   }
 
   updateGridDescription(description: string): void {
-    this.state.update((state) => ({
-      ...state,
-      description: description,
-    }));
+    setDescription(description);
   }
 
   togglePublic(): void {
-    this.state.update((state) => ({
-      ...state,
-      isPublic: !state.isPublic,
-    }));
+    setIsPublic(!gridSelectors.isPublic());
   }
 
   // Event handlers for child components
@@ -292,10 +279,7 @@ export class GridBuilderComponent implements OnInit {
   }
 
   onThemeSelected(theme: string): void {
-    this.state.update((state) => ({
-      ...state,
-      selectedTheme: theme,
-    }));
+    setTheme(theme);
   }
 
   onPreviewEdit(): void {
@@ -307,11 +291,10 @@ export class GridBuilderComponent implements OnInit {
   }
 
   onPublishingCancel(): void {
-    this.state.update((state) => ({
-      ...state,
-      isGenerating: false,
-      currentStep: 'preview',
-    }));
+    setIsGenerating(false);
+    // move UI back to preview step (store-backed)
+    // no direct setter for currentStep; progress update will reflect store
+    this.updateProgress();
   }
 
   onPublishingPlay(gridId: string): void {
@@ -333,20 +316,7 @@ export class GridBuilderComponent implements OnInit {
   }
 
   onPublishingCreateAnother(): void {
-    this.state.update(() => ({
-      currentGrid: null,
-      tiles: [],
-      selectedTiles: [],
-      selectedCategory: '',
-      selectedTheme: '86xed-dark',
-      isGenerating: false,
-      currentStep: 'category',
-      aiSuggestions: [],
-      title: '',
-      description: '',
-      isPublic: false,
-      generationProgress: 0,
-    }));
+    resetBuilderState();
   }
 
   onPublishingRetry(): void {
@@ -357,145 +327,132 @@ export class GridBuilderComponent implements OnInit {
     this.goToStepString('preview');
   }
 
+  // Store-backed helpers for template bindings
+  get storeSelectedTiles(): Tile[] {
+    return gridSelectors.selectedTiles();
+  }
+
+  get storeAISuggestions(): Tile[] {
+    return gridSelectors.aiSuggestions();
+  }
+
+  get storeAvailableTiles(): Tile[] {
+    return gridSelectors.availableTiles();
+  }
+
   fillWithAISuggestions(): void {
-    const needed = 24 - this.state().selectedTiles.length;
+    const selected = gridSelectors.selectedTiles();
+    const needed = 24 - selected.length;
     if (needed <= 0) return;
 
-    const allTiles = this.availableTiles();
-    const selectedIds = this.state().selectedTiles.map((f) => f.id);
-
-    // Get the next best available tiles to fill the grid
+    const allTiles = gridSelectors.availableTiles();
+    const selectedIds = new Set(selected.map((f: Tile) => f.id));
     const newTiles = allTiles
-      .filter((f) => !selectedIds.includes(f.id))
+      .filter((f: Tile) => !selectedIds.has(f.id))
       .slice(0, needed);
+    const newSelectedTiles = [...selected, ...newTiles];
+    setSelectedTiles(newSelectedTiles);
 
-    this.state.update((state) => {
-      const newSelectedTiles = [...state.selectedTiles, ...newTiles];
-      const newSelectedIds = newSelectedTiles.map((f) => f.id);
-
-      // Update AI suggestions to show the next available tiles
-      const newSuggestions = allTiles
-        .filter((f) => !newSelectedIds.includes(f.id))
-        .slice(0, 8);
-
-      return {
-        ...state,
-        selectedTiles: newSelectedTiles,
-        aiSuggestions: newSuggestions,
-      };
-    });
+    const newSelectedIds = new Set(newSelectedTiles.map((f: Tile) => f.id));
+    const newSuggestions = allTiles
+      .filter((f: Tile) => !newSelectedIds.has(f.id))
+      .slice(0, 8);
+    setAISuggestions(newSuggestions);
   }
 
   clearAllTiles(): void {
     // Reset to the top 24 recommendations instead of clearing completely
-    const allTiles = this.availableTiles();
+    const allTiles = gridSelectors.availableTiles();
     const topRecommendations = allTiles.slice(0, 24);
-
-    this.state.update((state) => ({
-      ...state,
-      selectedTiles: topRecommendations,
-      aiSuggestions: allTiles.slice(24, 32),
-    }));
+    setSelectedTiles(topRecommendations);
+    setAISuggestions(allTiles.slice(24, 32));
   }
 
   getEmptySlots(): number[] {
-    const filled = this.state().selectedTiles.length;
+    const filled = gridSelectors.selectedTiles().length;
     return Array(24 - filled).fill(0);
   }
 
   onSearchTiles(query: string): void {
-    this.searchTiles.set(query);
+    this.searchTiles = query;
     // Filter available tiles based on query
     // Implementation would filter this.availableTiles()
   }
 
-  isTileSelected(tile: tile): boolean {
-    return this.state().selectedTiles.some((f) => f.id === tile.id);
-  }
+  onRemoveAt(event: { tile: Tile; index: number }): void {
+    const { tile, index } = event;
+    const allTiles = gridSelectors.availableTiles();
+    const selected = gridSelectors.selectedTiles();
+    if (!selected.length) return;
 
-  toggleTileSelection(tile: tile): void {
-    const selected = this.state().selectedTiles;
-    const isSelected = selected.some((f) => f.id === tile.id);
-
-    if (isSelected) {
-      // When removing a tile, replace it with the next best recommendation
-      const allTiles = this.availableTiles();
-      const selectedIds = selected.map((f) => f.id);
-
-      // Find the next best tile that isn't already selected
-      const replacement = allTiles.find(
-        (f) => !selectedIds.includes(f.id) && f.id !== tile.id
-      );
-
-      this.state.update((state) => {
-        // Find the position of the tile to remove
-        const tilePosition = state.selectedTiles.findIndex(
-          (f) => f.id === tile.id
-        );
-
-        // Create new array with replacement at the exact position
-        const newSelectedTiles = [...state.selectedTiles];
-
-        if (replacement) {
-          // Replace the tile at its exact position
-          newSelectedTiles[tilePosition] = replacement;
-        } else {
-          // If no replacement available, remove the tile
-          newSelectedTiles.splice(tilePosition, 1);
-        }
-
-        // Update AI suggestions to show the next set of available tiles
-        const newSelectedIds = newSelectedTiles.map((f) => f.id);
-        const newSuggestions = allTiles
-          .filter((f) => !newSelectedIds.includes(f.id))
-          .slice(0, 8);
-
-        return {
-          ...state,
-          selectedTiles: newSelectedTiles,
-          aiSuggestions: newSuggestions,
-        };
-      });
-    } else if (selected.length < 24) {
-      // Adding a tile (from AI suggestions or available tiles)
-      this.state.update((state) => {
-        const newSelectedTiles = [...state.selectedTiles, tile];
-        const newSelectedIds = newSelectedTiles.map((f) => f.id);
-
-        // Update AI suggestions to exclude newly selected tile
-        const allTiles = this.availableTiles();
-        const newSuggestions = allTiles
-          .filter((f) => !newSelectedIds.includes(f.id))
-          .slice(0, 8);
-
-        return {
-          ...state,
-          selectedTiles: newSelectedTiles,
-          aiSuggestions: newSuggestions,
-        };
-      });
+    // Map 5x5 slot index to selected array index (skip center at 12)
+    const pos = index > 12 ? index - 1 : index;
+    const newSelected = [...selected];
+    if (newSelected[pos]?.id !== tile.id) {
+      // Fallback by id if mismatch
+      const byId = newSelected.findIndex((t) => t.id === tile.id);
+      if (byId !== -1) {
+        newSelected.splice(byId, 1);
+      } else {
+        newSelected.splice(pos, 1);
+      }
+    } else {
+      newSelected.splice(pos, 1);
     }
+
+    // Choose next best replacement not already selected
+    const selectedIds = new Set(newSelected.map((t: Tile) => t.id));
+    const replacement =
+      allTiles.find((t: Tile) => !selectedIds.has(t.id) && t.id !== tile.id) ||
+      null;
+    if (replacement && newSelected.length < 24) {
+      // Insert at the same position to preserve layout order
+      newSelected.splice(pos, 0, replacement);
+    }
+
+    setSelectedTiles(newSelected);
+
+    // Recompute AI suggestions
+    const newIds = new Set(newSelected.map((t: Tile) => t.id));
+    const suggestions = allTiles
+      .filter((t: Tile) => !newIds.has(t.id))
+      .slice(0, 8);
+    setAISuggestions(suggestions);
   }
 
-  onTileDragStart(event: DragEvent, tile: tile): void {
-    // Implementation for drag and drop
+  onAddTile(tile: Tile): void {
+    const allTiles = gridSelectors.availableTiles();
+    const selected = gridSelectors.selectedTiles();
+    if (selected.length >= 24 || selected.some((t: Tile) => t.id === tile.id))
+      return;
+    const newSelected = [...selected, tile];
+    setSelectedTiles(newSelected);
+    const ids = new Set(newSelected.map((t: Tile) => t.id));
+    setAISuggestions(allTiles.filter((t: Tile) => !ids.has(t.id)).slice(0, 8));
   }
 
+  // Drag-drop stubs (reserved for future feature)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onTileDragStart(event: DragEvent, tile: Tile): void {
+    // No-op: drag and drop not implemented yet
+  }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onTileDrop(event: DragEvent, index: number): void {
-    // Implementation for drag and drop
+    // No-op: drag and drop not implemented yet
   }
 
   onTileDragOver(event: DragEvent): void {
     event.preventDefault();
   }
 
-  getGridPreview(): (tile | null)[] {
+  getGridPreview(): (Tile | null)[] {
     const grid = new Array(25).fill(null);
     // Fill with selected tiles (skip center cell at index 12)
     let tileIndex = 0;
     for (let i = 0; i < 25; i++) {
-      if (i !== 12 && tileIndex < this.state().selectedTiles.length) {
-        grid[i] = this.state().selectedTiles[tileIndex];
+      const selected = gridSelectors.selectedTiles();
+      if (i !== 12 && tileIndex < selected.length) {
+        grid[i] = selected[tileIndex];
         tileIndex++;
       }
     }
@@ -503,12 +460,9 @@ export class GridBuilderComponent implements OnInit {
   }
 
   generateGrid(): void {
-    this.state.update((state) => ({
-      ...state,
-      currentStep: 'publishing',
-      isGenerating: true,
-      generationProgress: 0,
-    }));
+    setStep('publishing');
+    setIsGenerating(true);
+    setGenerationProgress(0);
 
     // Simulate grid generation
     this.simulateGridGeneration();
@@ -522,14 +476,14 @@ export class GridBuilderComponent implements OnInit {
       'preview',
       'publishing',
     ];
-    const currentIndex = steps.indexOf(this.state().currentStep);
-    this.currentStepIndex.set(currentIndex);
-    this.progressPercentage.set((currentIndex / (steps.length - 1)) * 100);
+    const currentIndex = steps.indexOf(gridSelectors.step());
+    this.currentStepIndex = currentIndex;
+    this.progressPercentage = (currentIndex / (steps.length - 1)) * 100;
   }
 
   private loadTilesForCategory(categoryId: string): void {
     // Generate more tiles to have enough for replacements (50 total)
-    const mockTiles: tile[] = Array.from({ length: 50 }, (_, i) => ({
+    const mockTiles: Tile[] = Array.from({ length: 50 }, (_, i) => ({
       id: `tile_${categoryId}_${i}`,
       imageUrl: `https://picsum.photos/200/200?random=${
         i + Math.floor(Math.random() * 1000)
@@ -548,15 +502,11 @@ export class GridBuilderComponent implements OnInit {
     // Sort by confidence to get best recommendations first
     const sortedTiles = mockTiles.sort((a, b) => b.confidence - a.confidence);
 
-    this.availableTiles.set(sortedTiles);
-    this.state.update((state) => ({
-      ...state,
-      tiles: sortedTiles,
-      // Pre-select top 24 tiles as initial recommendations
-      selectedTiles: sortedTiles.slice(0, 24),
-      // Show next 8 as AI suggestions for potential replacements
-      aiSuggestions: sortedTiles.slice(24, 32),
-    }));
+    setAvailableTiles(sortedTiles);
+    // Pre-select top 24 tiles as initial recommendations
+    setSelectedTiles(sortedTiles.slice(0, 24));
+    // Show next 8 as AI suggestions for potential replacements
+    setAISuggestions(sortedTiles.slice(24, 32));
   }
 
   private simulateGridGeneration(): void {
@@ -566,16 +516,10 @@ export class GridBuilderComponent implements OnInit {
       if (progress >= 100) {
         progress = 100;
         clearInterval(interval);
-        this.state.update((state) => ({
-          ...state,
-          isGenerating: false,
-          generationProgress: 100,
-        }));
+        setIsGenerating(false);
+        setGenerationProgress(100);
       } else {
-        this.state.update((state) => ({
-          ...state,
-          generationProgress: progress,
-        }));
+        setGenerationProgress(progress);
       }
     }, 500);
   }

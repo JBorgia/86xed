@@ -1,22 +1,21 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 
-// Core Services
 import { SupabaseService } from '../../services/api/supabase.service';
 import { BingoGrid } from '../../types';
-
-// Sub-components
-import { GalleryHeaderComponent } from './components/gallery-header/gallery-header.component';
 import {
-  GalleryFiltersComponent,
-  GalleryFilters,
   FilterOption,
+  GalleryFilters,
+  GalleryFiltersComponent,
 } from './components/gallery-filters/gallery-filters.component';
+import { GalleryHeaderComponent } from './components/gallery-header/gallery-header.component';
 import { GridCardComponent } from './components/grid-card/grid-card.component';
 import { LoadMoreComponent } from './components/load-more/load-more.component';
 
+// Core Services
+// Sub-components
 @Component({
   selector: 'x86-gallery',
   standalone: true,
@@ -31,23 +30,24 @@ import { LoadMoreComponent } from './components/load-more/load-more.component';
   ],
   templateUrl: './gallery.component.html',
   styleUrl: './gallery.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GalleryComponent implements OnInit {
   private supabaseService = inject(SupabaseService);
 
-  // Component state
-  allGrids = signal<BingoGrid[]>([]);
-  filteredGrids = signal<BingoGrid[]>([]);
-  gridsLoading = signal(true);
-  loadingMore = signal(false);
-  hasMoreGrids = signal(true);
+  // Component state (migrated from signals)
+  allGrids: BingoGrid[] = [];
+  filteredGrids: BingoGrid[] = [];
+  gridsLoading = true;
+  loadingMore = false;
+  hasMoreGrids = true;
 
   // Filter state
-  filters = signal<GalleryFilters>({
+  filters: GalleryFilters = {
     category: 'all',
     sortBy: 'viral',
     searchTerm: '',
-  });
+  };
 
   // Configuration
   readonly categoryOptions: FilterOption[] = [
@@ -74,23 +74,23 @@ export class GalleryComponent implements OnInit {
   }
 
   updateFilter(key: keyof GalleryFilters, value: string): void {
-    this.filters.update((current) => ({
-      ...current,
+    this.filters = {
+      ...this.filters,
       [key]: value,
-    }));
+    };
     this.applyFilters();
   }
 
   private async loadGrids(): Promise<void> {
     try {
-      this.gridsLoading.set(true);
+      this.gridsLoading = true;
 
       // In a real app, this would fetch from Supabase with pagination
       // For now, load mock data
       this.loadMockGrids();
     } catch (error) {
       console.error('Failed to load grids:', error);
-      this.gridsLoading.set(false);
+      this.gridsLoading = false;
     }
   }
 
@@ -251,15 +251,15 @@ export class GalleryComponent implements OnInit {
         },
       ];
 
-      this.allGrids.set(mockGrids);
+      this.allGrids = mockGrids;
       this.applyFilters();
-      this.gridsLoading.set(false);
+      this.gridsLoading = false;
     }, 1000);
   }
 
   private applyFilters(): void {
-    const currentFilters = this.filters();
-    let filtered = [...this.allGrids()];
+    const currentFilters = this.filters;
+    let filtered = [...this.allGrids];
 
     // Apply category filter
     if (currentFilters.category !== 'all') {
@@ -295,16 +295,16 @@ export class GalleryComponent implements OnInit {
         break;
     }
 
-    this.filteredGrids.set(filtered);
+    this.filteredGrids = filtered;
   }
 
   loadMoreGrids(): void {
-    this.loadingMore.set(true);
+    this.loadingMore = true;
 
     // Simulate loading more grids
     setTimeout(() => {
-      this.loadingMore.set(false);
-      this.hasMoreGrids.set(false); // For demo, disable after first load
+      this.loadingMore = false;
+      this.hasMoreGrids = false; // For demo, disable after first load
     }, 1000);
   }
 

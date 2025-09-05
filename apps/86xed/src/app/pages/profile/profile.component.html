@@ -5,7 +5,7 @@
     <div class="profile-info">
       <div class="avatar">
         @if (user()?.avatar_url) {
-        <img [src]="user()?.avatar_url" [alt]="user()?.username" />
+        <img [src]="user()!.avatar_url" [alt]="user()!.username" />
         } @else {
         <div class="avatar-placeholder">
           {{ getInitials(user()?.username || '') }}
@@ -22,11 +22,11 @@
             <span class="stat-label">Grids Created</span>
           </div>
           <div class="stat">
-            <span class="stat-number">{{ getTotalShares() }}</span>
+            <span class="stat-number">{{ totalShares() }}</span>
             <span class="stat-label">Total Shares</span>
           </div>
           <div class="stat">
-            <span class="stat-number">{{ getViralGridsCount() }}</span>
+            <span class="stat-number">{{ viralGridsCount() }}</span>
             <span class="stat-label">Viral Grids</span>
           </div>
         </div>
@@ -55,12 +55,12 @@
         <div class="card-content">
           <div class="performance-metric">
             <span class="metric-value"
-              >{{ Math.round(getAverageViralScore() * 100) }}%</span
+              >{{ Math.round(averageViralScore() * 100) }}%</span
             >
             <span class="metric-label">Average Viral Score</span>
           </div>
           <div class="performance-chart">
-            @for (grid of getTopViralGrids(); track grid.id) {
+            @for (grid of topViralGrids(); track grid.id) {
             <div class="chart-bar">
               <div
                 class="bar-fill"
@@ -80,23 +80,21 @@
         <div class="card-content">
           <div class="earnings-summary">
             <div class="earning-item">
-              <span class="earning-amount">${{ mockEarnings().total }}</span>
+              <span class="earning-amount">${{ mockEarnings.total }}</span>
               <span class="earning-label">Total Earnings</span>
             </div>
             <div class="earning-item">
-              <span class="earning-amount"
-                >${{ mockEarnings().thisMonth }}</span
-              >
+              <span class="earning-amount">${{ mockEarnings.thisMonth }}</span>
               <span class="earning-label">This Month</span>
             </div>
           </div>
           <div class="monetized-grids">
             <h4>💎 Monetized Grids</h4>
-            @if (getMonetizedGrids().length === 0) {
+            @if (monetizedGrids().length === 0) {
             <p class="no-monetized">
               No monetized grids yet. Create viral content to start earning!
             </p>
-            } @else { @for (grid of getMonetizedGrids(); track grid.id) {
+            } @else { @for (grid of monetizedGrids(); track grid.id) {
             <div class="monetized-grid">
               <span class="grid-name">{{ grid.title }}</span>
               <span class="grid-earnings"
@@ -146,14 +144,14 @@
           [class.active]="currentFilter() === 'viral'"
           (click)="setFilter('viral')"
         >
-          Viral ({{ getViralGridsCount() }})
+          Viral ({{ viralGridsCount() }})
         </button>
         <button
           class="filter-button"
           [class.active]="currentFilter() === 'monetized'"
           (click)="setFilter('monetized')"
         >
-          Monetized ({{ getMonetizedGrids().length }})
+          Monetized ({{ monetizedGrids().length }})
         </button>
       </div>
     </div>

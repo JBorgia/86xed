@@ -1,12 +1,13 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { tile } from '../../../../types';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+
+import { Tile } from '../../../../types';
 
 export interface GridPreviewData {
   title: string;
   description: string;
   selectedCategory: string;
-  selectedTiles: tile[];
+  selectedTiles: Tile[];
   isPublic: boolean;
   isGenerating: boolean;
 }
@@ -46,7 +47,7 @@ export class GridPreviewComponent {
     );
   }
 
-  getGridPreview(): (tile | null)[] {
+  getGridPreview(): (Tile | null)[] {
     const grid = new Array(25).fill(null);
     // Fill with selected tiles (skip center cell at index 12)
     let tileIndex = 0;

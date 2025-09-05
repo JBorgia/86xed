@@ -1,5 +1,5 @@
-import { Component, Input, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, computed, input } from '@angular/core';
 
 export type ButtonVariant =
   | 'primary'
@@ -17,30 +17,31 @@ export type ButtonSize = 'sm' | 'md' | 'lg';
   styleUrl: './button.component.scss',
 })
 export class ButtonComponent {
-  @Input() variant: ButtonVariant = 'primary';
-  @Input() size: ButtonSize = 'md';
-  @Input() disabled = false;
-  @Input() loading = false;
-  @Input() fullWidth = false;
-  @Input() type: 'button' | 'submit' | 'reset' = 'button';
-  @Input() ariaLabel?: string;
+  // Modern input signals
+  variant = input<ButtonVariant>('primary');
+  size = input<ButtonSize>('md');
+  disabled = input(false);
+  loading = input(false);
+  fullWidth = input(false);
+  type = input<'button' | 'submit' | 'reset'>('button');
+  ariaLabel = input<string | undefined>(undefined);
 
   // Icon support
-  @Input() icon?: string;
-  @Input() iconPosition: 'left' | 'right' = 'left';
-  @Input() iconOnly = false;
+  icon = input<string | undefined>(undefined);
+  iconPosition = input<'left' | 'right'>('left');
+  iconOnly = input(false);
 
-  // Simple, direct class computation for 86xed needs
+  // Computed classes using modern signal patterns
   buttonClasses = computed(() => {
     const classes = ['u86-btn'];
 
-    classes.push(`u86-btn--${this.variant}`);
-    classes.push(`u86-btn--${this.size}`);
+    classes.push(`u86-btn--${this.variant()}`);
+    classes.push(`u86-btn--${this.size()}`);
 
-    if (this.disabled) classes.push('u86-btn--disabled');
-    if (this.loading) classes.push('u86-btn--loading');
-    if (this.fullWidth) classes.push('u86-btn--full-width');
-    if (this.iconOnly) classes.push('u86-btn--icon-only');
+    if (this.disabled()) classes.push('u86-btn--disabled');
+    if (this.loading()) classes.push('u86-btn--loading');
+    if (this.fullWidth()) classes.push('u86-btn--full-width');
+    if (this.iconOnly()) classes.push('u86-btn--icon-only');
 
     return classes.join(' ');
   });

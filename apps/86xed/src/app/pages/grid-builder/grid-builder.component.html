@@ -6,7 +6,7 @@
       <p>{{ getStepDescription() }}</p>
 
       <div class="progress-bar">
-        <div class="progress-fill" [style.width.%]="progressPercentage()"></div>
+        <div class="progress-fill" [style.width.%]="progressPercentage"></div>
       </div>
 
       <div class="step-indicators">
@@ -14,9 +14,9 @@
         'publishing']; track step; let i = $index) {
         <button
           class="step-indicator"
-          [class.active]="currentStepIndex() === i"
-          [class.completed]="currentStepIndex() > i"
-          (click)="goToStepString(step)"
+          [class.active]="currentStepIndex === i"
+          [class.completed]="currentStepIndex > i"
+          (click)="goToStepUnsafe(step)"
           [attr.aria-label]="'Go to step ' + (i + 1)"
           type="button"
         >
@@ -30,26 +30,27 @@
   <!-- Main Content -->
   <main class="grid-builder-main">
     <!-- Category Selection Step -->
-    @if (state().currentStep === 'category') {
+    @if (gridSelectors.step() === 'category') {
     <div class="step-content category-step">
       <x86-category-selection
-        [categories]="categories()"
-        [selectedCategoryId]="state().selectedCategory"
+        [categories]="categories"
+        [selectedCategoryId]="gridSelectors.selectedCategory()"
         (categorySelected)="onCategorySelected($event)"
       ></x86-category-selection>
     </div>
     }
 
     <!-- tile Selection Step -->
-    @if (state().currentStep === 'tiles') {
+    @if (gridSelectors.step() === 'tiles') {
     <div class="step-content tiles-step">
       <x86-tile-selection
-        [selectedTiles]="state().selectedTiles"
-        [availableTiles]="availableTiles()"
-        [aiSuggestions]="state().aiSuggestions"
-        [categoryName]="state().selectedCategory"
-        [searchQuery]="searchTiles()"
-        (tileToggled)="toggleTileSelection($event)"
+        [selectedTiles]="storeSelectedTiles"
+        [availableTiles]="storeAvailableTiles"
+        [aiSuggestions]="storeAISuggestions"
+        [categoryName]="gridSelectors.selectedCategory()"
+        [searchQuery]="searchTiles"
+        (removeAt)="onRemoveAt($event)"
+        (addTile)="onAddTile($event)"
         (fillWithAI)="fillWithAISuggestions()"
         (clearAll)="clearAllTiles()"
         (searchChanged)="onSearchTiles($event)"
@@ -58,11 +59,11 @@
     }
 
     <!-- Customization Step -->
-    @if (state().currentStep === 'customization') {
+    @if (gridSelectors.step() === 'customization') {
     <div class="step-content customization-step">
       <x86-grid-customization
         [customizationData]="gridCustomizationData"
-        [selectedTheme]="state().selectedTheme"
+        [selectedTheme]="gridSelectors.selectedTheme()"
         (titleChanged)="updateGridTitle($event)"
         (descriptionChanged)="updateGridDescription($event)"
         (publicToggled)="togglePublic()"
@@ -72,7 +73,7 @@
     }
 
     <!-- Preview Step -->
-    @if (state().currentStep === 'preview') {
+    @if (gridSelectors.step() === 'preview') {
     <div class="step-content preview-step">
       <x86-grid-preview
         [previewData]="gridPreviewData"
@@ -83,7 +84,7 @@
     }
 
     <!-- Publishing Step -->
-    @if (state().currentStep === 'publishing') {
+    @if (gridSelectors.step() === 'publishing') {
     <div class="step-content publishing-step">
       <x86-publishing
         [publishingData]="publishingData"
@@ -102,12 +103,12 @@
   <!-- Navigation Footer -->
   <footer class="grid-builder-footer">
     <div class="nav-actions">
-      @if (state().currentStep !== 'category' && state().currentStep !==
+      @if (gridSelectors.step() !== 'category' && gridSelectors.step() !==
       'publishing') {
       <button class="btn btn-outline" (click)="previousStep()">
         ← Previous
       </button>
-      } @if (state().currentStep !== 'preview' && state().currentStep !==
+      } @if (gridSelectors.step() !== 'preview' && gridSelectors.step() !==
       'publishing') {
       <button
         class="btn btn-primary"
@@ -116,11 +117,11 @@
       >
         Next →
       </button>
-      } @if (state().currentStep === 'preview') {
+      } @if (gridSelectors.step() === 'preview') {
       <button
         class="btn btn-primary btn-large"
         (click)="generateGrid()"
-        [disabled]="state().isGenerating"
+        [disabled]="gridSelectors.isGenerating()"
       >
         🚀 Create Grid
       </button>

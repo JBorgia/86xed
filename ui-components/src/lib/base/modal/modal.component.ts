@@ -1,14 +1,6 @@
-import {
-  Component,
-  Input,
-  Output,
-  EventEmitter,
-  ViewChild,
-  ElementRef,
-  AfterViewInit,
-} from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { A11yModule } from '@angular/cdk/a11y';
+import { CommonModule } from '@angular/common';
+import { AfterViewInit, Component, ElementRef, input, output, ViewChild } from '@angular/core';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
 
@@ -20,54 +12,54 @@ export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
   styleUrl: './modal.component.scss',
 })
 export class ModalComponent implements AfterViewInit {
-  @Input() isOpen = false;
-  @Input() size: ModalSize = 'md';
-  @Input() title?: string;
-  @Input() showCloseButton = true;
-  @Input() closeOnOverlayClick = true;
-  @Input() closeOnEscape = true;
-  @Input() preventBodyScroll = true;
+  // Modern input signals
+  isOpen = input(false);
+  size = input<ModalSize>('md');
+  title = input<string | undefined>(undefined);
+  showCloseButton = input(true);
+  closeOnOverlayClick = input(true);
+  closeOnEscape = input(true);
+  preventBodyScroll = input(true);
 
-  @Output() isOpenChange = new EventEmitter<boolean>();
-  @Output() closed = new EventEmitter<void>();
-  @Output() opened = new EventEmitter<void>();
+  // Modern output signals
+  isOpenChange = output<boolean>();
+  closed = output<void>();
+  opened = output<void>();
 
   @ViewChild('modalContent', { static: false }) modalContent?: ElementRef;
 
   ngAfterViewInit(): void {
-    if (this.isOpen) {
+    if (this.isOpen()) {
       this.handleOpen();
     }
   }
 
   private handleOpen(): void {
-    if (this.preventBodyScroll) {
+    if (this.preventBodyScroll()) {
       document.body.style.overflow = 'hidden';
     }
     this.opened.emit();
   }
 
   private handleClose(): void {
-    if (this.preventBodyScroll) {
+    if (this.preventBodyScroll()) {
       document.body.style.overflow = '';
     }
     this.closed.emit();
   }
 
   close(): void {
-    this.isOpen = false;
     this.isOpenChange.emit(false);
     this.handleClose();
   }
 
   open(): void {
-    this.isOpen = true;
     this.isOpenChange.emit(true);
     this.handleOpen();
   }
 
   onOverlayClick(event: Event): void {
-    if (this.closeOnOverlayClick && event.target === event.currentTarget) {
+    if (this.closeOnOverlayClick() && event.target === event.currentTarget) {
       this.close();
     }
   }
@@ -77,21 +69,21 @@ export class ModalComponent implements AfterViewInit {
       (event.key === 'Enter' || event.key === ' ') &&
       event.target === event.currentTarget
     ) {
-      if (this.closeOnOverlayClick) {
+      if (this.closeOnOverlayClick()) {
         this.close();
       }
     }
   }
 
   onEscapeKey(): void {
-    if (this.closeOnEscape) {
+    if (this.closeOnEscape()) {
       this.close();
     }
   }
 
   get modalClasses(): string {
     const classes = ['u86-modal__content'];
-    classes.push(`u86-modal__content--${this.size}`);
+    classes.push(`u86-modal__content--${this.size()}`);
     return classes.join(' ');
   }
 }

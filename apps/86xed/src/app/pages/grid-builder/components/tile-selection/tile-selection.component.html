@@ -33,7 +33,7 @@
           <span class="tile-name">{{ slot.tile.name }}</span>
           <button
             class="remove-tile"
-            (click)="onToggleTile(slot.tile)"
+            (click)="onRemoveAt(i, slot.tile)"
             title="Remove this tile (will be replaced with next best)"
           >
             ×
@@ -77,7 +77,7 @@
         <button
           class="tile-card"
           [class.selected]="isTileSelected(tile)"
-          (click)="onToggleTile(tile)"
+          (click)="onAddTile(tile)"
         >
           <img [src]="tile.imageUrl" [alt]="tile.name" />
           <div class="tile-info">
@@ -99,7 +99,7 @@
         <button
           class="tile-card"
           [class.selected]="isTileSelected(tile)"
-          (click)="onToggleTile(tile)"
+          (click)="onAddTile(tile)"
         >
           <img [src]="tile.imageUrl" [alt]="tile.name" />
           <div class="tile-info">

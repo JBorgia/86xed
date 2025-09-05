@@ -1,7 +1,8 @@
-import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { BingoGrid, tile } from '../../../../types';
+
+import { BingoGrid, Tile } from '../../../../types';
 
 @Component({
   selector: 'x86-grid-card',
@@ -9,9 +10,10 @@ import { BingoGrid, tile } from '../../../../types';
   imports: [CommonModule, RouterModule],
   templateUrl: './grid-card.component.html',
   styleUrl: './grid-card.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GridCardComponent {
-  @Input() grid!: BingoGrid;
+  grid = input.required<BingoGrid>();
 
   getViralBadgeClass(viralScore: number): string {
     if (viralScore >= 0.8) return 'viral-legendary';
@@ -28,8 +30,9 @@ export class GridCardComponent {
   }
 
   getMiniGridCells(): string[] {
-    if (this.grid?.tiles && Array.isArray(this.grid.tiles)) {
-      return this.grid.tiles.slice(0, 8).map((tile: tile) => {
+    const gridData = this.grid();
+    if (gridData?.tiles && Array.isArray(gridData.tiles)) {
+      return gridData.tiles.slice(0, 8).map((tile: Tile) => {
         return tile.imageUrl || tile.name || '';
       });
     }

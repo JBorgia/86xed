@@ -1,6 +1,7 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { tile } from '../../../../types';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+
+import { Tile } from '../../../../types';
 
 @Component({
   selector: 'x86-tile-selection',
@@ -10,19 +11,25 @@ import { tile } from '../../../../types';
   styleUrl: './tile-selection.component.scss',
 })
 export class TileSelectionComponent {
-  @Input() selectedTiles: tile[] = [];
-  @Input() availableTiles: tile[] = [];
-  @Input() aiSuggestions: tile[] = [];
+  @Input() selectedTiles: Tile[] = [];
+  @Input() availableTiles: Tile[] = [];
+  @Input() aiSuggestions: Tile[] = [];
   @Input() categoryName = '';
   @Input() searchQuery = '';
 
-  @Output() tileToggled = new EventEmitter<tile>();
+  // Separate outputs for clarity: remove carries slot index, add just the tile
+  @Output() removeAt = new EventEmitter<{ tile: Tile; index: number }>();
+  @Output() addTile = new EventEmitter<Tile>();
   @Output() fillWithAI = new EventEmitter<void>();
   @Output() clearAll = new EventEmitter<void>();
   @Output() searchChanged = new EventEmitter<string>();
 
-  onToggleTile(tile: tile): void {
-    this.tileToggled.emit(tile);
+  onAddTile(tile: Tile): void {
+    this.addTile.emit(tile);
+  }
+
+  onRemoveAt(index: number, tile: Tile): void {
+    this.removeAt.emit({ tile, index });
   }
 
   onFillWithAI(): void {
@@ -37,7 +44,7 @@ export class TileSelectionComponent {
     this.searchChanged.emit(query);
   }
 
-  isTileSelected(tile: tile): boolean {
+  isTileSelected(tile: Tile): boolean {
     return this.selectedTiles.some((f) => f.id === tile.id);
   }
 
@@ -46,8 +53,8 @@ export class TileSelectionComponent {
     return Array(24 - filled).fill(0);
   }
 
-  getGridSlots(): { tile: tile | null }[] {
-    const slots: { tile: tile | null }[] = Array(25)
+  getGridSlots(): { tile: Tile | null }[] {
+    const slots: { tile: Tile | null }[] = Array(25)
       .fill(null)
       .map(() => ({ tile: null }));
 

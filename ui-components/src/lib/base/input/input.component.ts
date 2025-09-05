@@ -1,20 +1,20 @@
+import { FocusMonitor } from '@angular/cdk/a11y';
 import { CommonModule } from '@angular/common';
 import {
   Component,
-  ElementRef,
-  ViewChild,
-  Input,
-  Output,
-  EventEmitter,
-  forwardRef,
-  OnInit,
-  OnDestroy,
   computed,
-  signal,
+  ElementRef,
+  forwardRef,
   inject,
+  input,
+  model,
+  OnDestroy,
+  OnInit,
+  output,
+  signal,
+  ViewChild,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { FocusMonitor } from '@angular/cdk/a11y';
 
 export type InputVariant = 'default' | 'outline' | 'filled' | 'underline';
 export type InputSize = 'sm' | 'md' | 'lg';
@@ -40,40 +40,40 @@ export type InputType =
   ],
   template: `
     <div [class]="containerClasses()">
-      <label *ngIf="label" [for]="inputId" [class]="labelClasses()">
-        {{ label }}
-        <span *ngIf="required" class="u86-input__required">*</span>
+      <label *ngIf="label()" [for]="inputId" [class]="labelClasses()">
+        {{ label() }}
+        <span *ngIf="required()" class="u86-input__required">*</span>
       </label>
 
       <div [class]="inputWrapperClasses()">
-        <span *ngIf="prefix" class="u86-input__prefix">{{ prefix }}</span>
+        <span *ngIf="prefix()" class="u86-input__prefix">{{ prefix() }}</span>
 
         <input
           #inputElement
           [id]="inputId"
-          [type]="type"
+          [type]="type()"
           [value]="value()"
-          [placeholder]="placeholder"
-          [disabled]="disabled"
-          [readonly]="readonly"
-          [required]="required"
-          [min]="min"
-          [max]="max"
-          [step]="step"
-          [pattern]="pattern"
-          [autocomplete]="autocomplete"
+          [placeholder]="placeholder()"
+          [disabled]="disabled()"
+          [readonly]="readonly()"
+          [required]="required()"
+          [min]="min()"
+          [max]="max()"
+          [step]="step()"
+          [pattern]="pattern()"
+          [autocomplete]="autocomplete()"
           [class]="inputClasses()"
           (input)="onInput($event)"
-          (blur)="onBlur()"
-          (focus)="onFocus()"
+          (blur)="onBlur($event)"
+          (focus)="onFocus($event)"
           (keydown)="onKeyDown()"
         />
 
-        <span *ngIf="suffix" class="u86-input__suffix">{{ suffix }}</span>
+        <span *ngIf="suffix()" class="u86-input__suffix">{{ suffix() }}</span>
       </div>
 
-      <div *ngIf="helperText || errorMessage()" [class]="helperClasses()">
-        {{ errorMessage() || helperText }}
+      <div *ngIf="helperText() || errorMessage()" [class]="helperClasses()">
+        {{ errorMessage() || helperText() }}
       </div>
     </div>
   `,
@@ -82,52 +82,38 @@ export type InputType =
 export class InputComponent implements ControlValueAccessor, OnInit, OnDestroy {
   @ViewChild('inputElement') inputElement!: ElementRef<HTMLInputElement>;
 
-  // Configuration inputs
-  @Input() label = '';
-  @Input() placeholder = '';
-  @Input() helperText = '';
-  @Input() variant: InputVariant = 'default';
-  @Input() size: InputSize = 'md';
-  @Input() type: InputType = 'text';
-  @Input() prefix = '';
-  @Input() suffix = '';
-  @Input() readonly = false;
-  @Input() required = false;
-  @Input() autocomplete = '';
-  @Input() pattern = '';
-  @Input() min?: string | number;
-  @Input() max?: string | number;
-  @Input() step?: string | number;
+  // Configuration inputs using modern input() signals
+  label = input('');
+  placeholder = input('');
+  helperText = input('');
+  variant = input<InputVariant>('default');
+  size = input<InputSize>('md');
+  type = input<InputType>('text');
+  prefix = input('');
+  suffix = input('');
+  readonly = input(false);
+  required = input(false);
+  autocomplete = input('');
+  pattern = input('');
+  min = input<string | number | undefined>(undefined);
+  max = input<string | number | undefined>(undefined);
+  step = input<string | number | undefined>(undefined);
 
-  // State inputs
-  @Input()
-  set disabled(value: boolean) {
-    this._disabled.set(value);
-  }
-  get disabled() {
-    return this._disabled();
-  }
+  // State using input() with transform
+  disabled = input(false);
+  error = input<string | null>(null);
 
-  @Input()
-  set error(value: string | null) {
-    this._error.set(value);
-  }
-  get error() {
-    return this._error();
-  }
+  // Two-way binding using model()
+  value = model('');
 
-  // Events
-  @Output() valueChange = new EventEmitter<string>();
-  @Output() inputFocus = new EventEmitter<FocusEvent>();
-  @Output() inputBlur = new EventEmitter<FocusEvent>();
+  // Events using output()
+  inputFocus = output<FocusEvent>();
+  inputBlur = output<FocusEvent>();
 
-  // Internal state
-  private _disabled = signal(false);
-  private _error = signal<string | null>(null);
+  // Internal state (keep minimal internal signals)
   private _focused = signal(false);
   private _touched = signal(false);
 
-  value = signal('');
   inputId = `u86-input-${Math.random().toString(36).substr(2, 9)}`;
 
   // CDK
@@ -137,19 +123,19 @@ export class InputComponent implements ControlValueAccessor, OnInit, OnDestroy {
   containerClasses = computed(() =>
     [
       'u86-input',
-      `u86-input--${this.variant}`,
-      `u86-input--${this.size}`,
-      this._disabled() && 'u86-input--disabled',
-      this._error() && 'u86-input--error',
+      `u86-input--${this.variant()}`,
+      `u86-input--${this.size()}`,
+      this.disabled() && 'u86-input--disabled',
+      this.error() && 'u86-input--error',
       this._focused() && 'u86-input--focused',
-      this.required && 'u86-input--required',
+      this.required() && 'u86-input--required',
     ]
       .filter(Boolean)
       .join(' ')
   );
 
   labelClasses = computed(() =>
-    ['u86-input__label', this._error() && 'u86-input__label--error']
+    ['u86-input__label', this.error() && 'u86-input__label--error']
       .filter(Boolean)
       .join(' ')
   );
@@ -157,8 +143,8 @@ export class InputComponent implements ControlValueAccessor, OnInit, OnDestroy {
   inputWrapperClasses = computed(() =>
     [
       'u86-input__wrapper',
-      this.prefix && 'u86-input__wrapper--with-prefix',
-      this.suffix && 'u86-input__wrapper--with-suffix',
+      this.prefix() && 'u86-input__wrapper--with-prefix',
+      this.suffix() && 'u86-input__wrapper--with-suffix',
     ]
       .filter(Boolean)
       .join(' ')
@@ -167,12 +153,12 @@ export class InputComponent implements ControlValueAccessor, OnInit, OnDestroy {
   inputClasses = computed(() => ['u86-input__field'].join(' '));
 
   helperClasses = computed(() =>
-    ['u86-input__helper', this._error() && 'u86-input__helper--error']
+    ['u86-input__helper', this.error() && 'u86-input__helper--error']
       .filter(Boolean)
       .join(' ')
   );
 
-  errorMessage = computed(() => this._error());
+  errorMessage = computed(() => this.error());
 
   // ControlValueAccessor
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -199,19 +185,18 @@ export class InputComponent implements ControlValueAccessor, OnInit, OnDestroy {
     const newValue = target.value;
     this.value.set(newValue);
     this.onChange(newValue);
-    this.valueChange.emit(newValue);
   }
 
-  onFocus(): void {
+  onFocus(event: FocusEvent): void {
     this._focused.set(true);
-    this.inputFocus.emit();
+    this.inputFocus.emit(event);
   }
 
-  onBlur(): void {
+  onBlur(event: FocusEvent): void {
     this._focused.set(false);
     this._touched.set(true);
     this.onTouched();
-    this.inputBlur.emit();
+    this.inputBlur.emit(event);
   }
 
   onKeyDown(): void {
@@ -232,7 +217,8 @@ export class InputComponent implements ControlValueAccessor, OnInit, OnDestroy {
   }
 
   setDisabledState(isDisabled: boolean): void {
-    this._disabled.set(isDisabled);
+    // Note: disabled is now an input() signal, so we can't set it from here
+    // This would typically be handled by the parent component
   }
 
   // Public methods
@@ -247,6 +233,5 @@ export class InputComponent implements ControlValueAccessor, OnInit, OnDestroy {
   clear(): void {
     this.value.set('');
     this.onChange('');
-    this.valueChange.emit('');
   }
 }

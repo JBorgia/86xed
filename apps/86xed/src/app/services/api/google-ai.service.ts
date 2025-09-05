@@ -1,7 +1,7 @@
-import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
 
-import { tile } from '../../types/index';
+import { Tile } from '../../types';
 
 export interface GoogleVisionResponse {
   responses: Array<{
@@ -68,8 +68,8 @@ export class GoogleAIService {
   /**
    * Detect celebrities and enhance tile data with AI
    */
-  async detectCelebrities(tiles: Partial<tile>[]): Promise<tile[]> {
-    const enhancedTiles: tile[] = [];
+  async detectCelebrities(tiles: Partial<Tile>[]): Promise<Tile[]> {
+    const enhancedTiles: Tile[] = [];
 
     for (const tile of tiles) {
       try {
@@ -84,7 +84,7 @@ export class GoogleAIService {
         const visionResult = await this.analyzeImage(tile.imageUrl);
         const celebrityData = await this.identifyCelebrity(tile.imageUrl);
 
-        const enhancedTile: tile = {
+        const enhancedTile: Tile = {
           id: tile.id || this.generateTileId(),
           imageUrl: tile.imageUrl,
           name: celebrityData?.name || tile.name || 'Unknown',
@@ -108,7 +108,7 @@ export class GoogleAIService {
         console.error('❌ tile enhancement failed:', error);
 
         // Fallback: create basic tile object
-        const basicTile: tile = {
+        const basicTile: Tile = {
           id: tile.id || this.generateTileId(),
           imageUrl: tile.imageUrl || '',
           name: tile.name || 'Unknown',
@@ -215,7 +215,7 @@ export class GoogleAIService {
   /**
    * Generate meme text suggestions based on detected tiles
    */
-  async generateMemeText(tiles: tile[]): Promise<string[]> {
+  async generateMemeText(tiles: Tile[]): Promise<string[]> {
     const suggestions: string[] = [];
 
     for (const tile of tiles) {
@@ -254,7 +254,7 @@ export class GoogleAIService {
   /**
    * Analyze viral potential based on tile composition
    */
-  calculateViralScore(tiles: tile[]): number {
+  calculateViralScore(tiles: Tile[]): number {
     let score = 0;
 
     // Celebrity bonus
@@ -332,7 +332,7 @@ export class GoogleAIService {
     return celebrityKeywords.some((keyword) => lowerDesc.includes(keyword));
   }
 
-  private calculateTileDiversity(tiles: tile[]): number {
+  private calculateTileDiversity(tiles: Tile[]): number {
     // Simple diversity calculation based on celebrity vs non-celebrity mix
     const celebrityCount = tiles.filter((f) => f.celebrity).length;
     const nonCelebrityCount = tiles.length - celebrityCount;
@@ -344,7 +344,7 @@ export class GoogleAIService {
     return ratio * 2; // Scale to 0-1 range
   }
 
-  private calculateMemeScore(tiles: tile[]): number {
+  private calculateMemeScore(tiles: Tile[]): number {
     // tiles with expressive features or recognizable personalities score higher
     let memeScore = 0;
 

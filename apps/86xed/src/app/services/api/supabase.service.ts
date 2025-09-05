@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { Observable, from, BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, from, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { BingoGrid, SocialMetrics, tile } from '../../types/index';
+import { BingoGrid, SocialMetrics, Tile } from '../../types';
 
 export interface SupabaseUser {
   id: string;
@@ -347,7 +347,7 @@ export class SupabaseService {
       id: dbData['id'] as string,
       title: dbData['title'] as string,
       description: dbData['description'] as string,
-      tiles: (dbData['tiles'] as tile[]) || [],
+      tiles: (dbData['tiles'] as Tile[]) || [],
       theme: dbData['theme'] as string,
       createdBy: dbData['created_by'] as string,
       viralScore: (dbData['viral_score'] as number) || 0,

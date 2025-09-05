@@ -32,6 +32,9 @@ importers:
       '@angular/router':
         specifier: ~20.1.0
         version: 20.1.4(@angular/common@20.1.4(@angular/core@20.1.4(@angular/compiler@20.1.4)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@20.1.4(@angular/compiler@20.1.4)(rxjs@7.8.2)(zone.js@0.15.1))(@angular/platform-browser@20.1.4(@angular/common@20.1.4(@angular/core@20.1.4(@angular/compiler@20.1.4)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@20.1.4(@angular/compiler@20.1.4)(rxjs@7.8.2)(zone.js@0.15.1)))(rxjs@7.8.2)
+      '@signaltree/core':
+        specifier: ^2.0.5
+        version: 2.0.5(@angular/core@20.1.4(@angular/compiler@20.1.4)(rxjs@7.8.2)(zone.js@0.15.1))
       '@supabase/supabase-js':
         specifier: ^2.53.0
         version: 2.53.0
@@ -2396,6 +2399,11 @@ packages:
   '@schematics/angular@20.1.4':
     resolution: {integrity: sha512-TNpm15NKf4buxPYnGaB3JY2B/3sbL19SdlpPDxkgyVY8WDDeZX95m3Tz2qlKpsYxy2XCGUj4Sxh7zJNGC9e/4g==}
     engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0, npm: ^6.11.0 || ^7.5.6 || >=8.0.0, yarn: '>= 1.13.0'}
+
+  '@signaltree/core@2.0.5':
+    resolution: {integrity: sha512-jyQdS4nD2X75Fsg2aFdYCb6GJ3xwQ+MMiq17f5qqccrLawA1SAeRC7sbZnbWBnyZOmfyjJPNuo/Soq7bHnr8Gg==}
+    peerDependencies:
+      '@angular/core': ^20.1.0
 
   '@sigstore/bundle@3.1.0':
     resolution: {integrity: sha512-Mm1E3/CmDDCz3nDhFKTuYdB47EdRFRQMOE/EAbiG1MJW77/w1b3P7Qx7JSrVJs8PfwOLOVcKQCHErIwCTyPbag==}
@@ -10233,6 +10241,11 @@ snapshots:
       jsonc-parser: 3.3.1
     transitivePeerDependencies:
       - chokidar
+
+  '@signaltree/core@2.0.5(@angular/core@20.1.4(@angular/compiler@20.1.4)(rxjs@7.8.2)(zone.js@0.15.1))':
+    dependencies:
+      '@angular/core': 20.1.4(@angular/compiler@20.1.4)(rxjs@7.8.2)(zone.js@0.15.1)
+      tslib: 2.8.1
 
   '@sigstore/bundle@3.1.0':
     dependencies:

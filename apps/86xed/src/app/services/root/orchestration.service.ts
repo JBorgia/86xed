@@ -1,22 +1,13 @@
-import { Injectable, inject } from '@angular/core';
-import { Observable, from, combineLatest } from 'rxjs';
+import { inject, Injectable } from '@angular/core';
+import { combineLatest, from, Observable } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
 
-import {
-  BingoGrid,
-  tile,
-  GridInput,
-  SocialMetrics,
-  ShopifyProduct,
-  GridGenerationRequest,
-  ViralMetrics,
-  SocialShareData,
-} from '../../types/index';
-import { SupabaseService } from '../api/supabase.service';
-import { ShopifyService } from '../api/shopify.service';
+import { BingoGrid, GridInput, ShopifyProduct, SocialMetrics, Tile } from '../../types';
 import { GoogleAIService } from '../api/google-ai.service';
-import { SocialDistributionService } from './social-distribution.service';
+import { ShopifyService } from '../api/shopify.service';
+import { SupabaseService } from '../api/supabase.service';
 import { RealtimeService } from './realtime.service';
+import { SocialDistributionService } from './social-distribution.service';
 
 @Injectable({
   providedIn: 'root',
@@ -222,7 +213,7 @@ export class OrchestrationService {
     }
   }
 
-  private calculateInitialViralScore(tiles: tile[]): number {
+  private calculateInitialViralScore(tiles: Tile[]): number {
     // Calculate based on celebrity count, tile quality, AI confidence
     const celebrityBonus = tiles.filter((f) => f.celebrity).length * 0.2;
     const qualityScore =
@@ -244,7 +235,7 @@ export class OrchestrationService {
     return Math.min(baseScore + engagementBonus, 1);
   }
 
-  private categorizeTiles(tiles: tile[]): string[] {
+  private categorizeTiles(tiles: Tile[]): string[] {
     const categories: string[] = [];
     if (tiles.some((f) => f.celebrity)) categories.push('celebrities');
     if (tiles.length > 5) categories.push('crowd');

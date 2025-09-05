@@ -1,22 +1,22 @@
 <button
   [class]="buttonClasses()"
-  [type]="type"
-  [disabled]="disabled || loading"
-  [attr.aria-disabled]="disabled || loading"
-  [attr.aria-busy]="loading"
-  [attr.aria-label]="ariaLabel"
+  [type]="type()"
+  [disabled]="disabled() || loading()"
+  [attr.aria-disabled]="disabled() || loading()"
+  [attr.aria-busy]="loading()"
+  [attr.aria-label]="ariaLabel()"
 >
-  <span class="u86-btn__content" [class.u86-btn__content--hidden]="loading">
-    @if (icon && iconPosition === 'left') {
-    <span class="u86-btn__icon u86-btn__icon--left">{{ icon }}</span>
-    } @if (!iconOnly) {
+  <span class="u86-btn__content" [class.u86-btn__content--hidden]="loading()">
+    @if (icon() && iconPosition() === 'left') {
+    <span class="u86-btn__icon u86-btn__icon--left">{{ icon() }}</span>
+    } @if (!iconOnly()) {
     <ng-content></ng-content>
-    } @if (icon && iconPosition === 'right') {
-    <span class="u86-btn__icon u86-btn__icon--right">{{ icon }}</span>
+    } @if (icon() && iconPosition() === 'right') {
+    <span class="u86-btn__icon u86-btn__icon--right">{{ icon() }}</span>
     }
   </span>
 
-  @if (loading) {
+  @if (loading()) {
   <span class="u86-btn__spinner" aria-hidden="true">
     <svg class="u86-btn__spinner-icon" viewBox="0 0 24 24">
       <circle

@@ -1,14 +1,13 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
-// Core Services
 import { SupabaseService } from '../../../services/api/supabase.service';
-
-// Utils
 import { FormValidators, getValidationErrorMessage } from '../../../utils';
 
+// Core Services
+// Utils
 // Types
 interface RegisterFormData {
   username: string;
@@ -35,9 +34,9 @@ export class RegisterComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly supabaseService = inject(SupabaseService);
 
-  // Component state
-  readonly isLoading = signal(false);
-  readonly errorMessage = signal('');
+  // Component state (migrated from signals)
+  isLoading = false;
+  errorMessage = '';
 
   // Form configuration
   readonly registerForm = this.createForm();
@@ -66,7 +65,7 @@ export class RegisterComponent implements OnInit {
   }
 
   async onSubmit(): Promise<void> {
-    if (!this.registerForm.valid || this.isLoading()) return;
+    if (!this.registerForm.valid || this.isLoading) return;
 
     this.setLoadingState(true);
     const formData = this.registerForm.value as RegisterFormData;
@@ -122,8 +121,8 @@ export class RegisterComponent implements OnInit {
   }
 
   private setLoadingState(loading: boolean): void {
-    this.isLoading.set(loading);
-    if (loading) this.errorMessage.set('');
+    this.isLoading = loading;
+    if (loading) this.errorMessage = '';
   }
 
   private handleRegistrationError(error: any): void {
@@ -137,12 +136,12 @@ export class RegisterComponent implements OnInit {
       default: 'Failed to create account. Please try again.',
     };
 
-    const errorType =
+    const messageKey =
       Object.keys(errorMessages).find((key) =>
-        error.message?.toLowerCase().includes(key)
+        error?.message?.toLowerCase().includes(key)
       ) || 'default';
 
-    this.errorMessage.set(errorMessages[errorType]);
+    this.errorMessage = errorMessages[messageKey];
   }
 
   private async signUpWithProvider(provider: string): Promise<void> {
@@ -151,16 +150,12 @@ export class RegisterComponent implements OnInit {
     try {
       // TODO: Implement actual OAuth integration
       console.log(`${provider} sign-up - implementation pending`);
-      this.errorMessage.set(
-        `${
-          provider.charAt(0).toUpperCase() + provider.slice(1)
-        } sign-up coming soon!`
-      );
+      this.errorMessage = `${
+        provider.charAt(0).toUpperCase() + provider.slice(1)
+      } sign-up coming soon!`;
     } catch (error) {
       console.error(`${provider} sign-up error:`, error);
-      this.errorMessage.set(
-        `Failed to sign up with ${provider}. Please try again.`
-      );
+      this.errorMessage = `Failed to sign up with ${provider}. Please try again.`;
     } finally {
       this.setLoadingState(false);
     }
