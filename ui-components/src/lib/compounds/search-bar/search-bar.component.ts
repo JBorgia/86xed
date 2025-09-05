@@ -121,7 +121,7 @@ export class SearchBarComponent {
 
   // Internal state
   searchValue = signal('');
-  private debounceTimer: NodeJS.Timeout | null = null;
+  private debounceTimer: number | null = null;
 
   constructor() {
     // Initialize with provided value
